@@ -1,8 +1,8 @@
 "use client";
 
-import { Activity, Bot, Cpu, AlertCircle, Play, Square, RefreshCcw } from "lucide-react";
+import { Activity, Bot, Cpu, AlertCircle, Play, Square, RefreshCcw, X, Plus } from "lucide-react";
 import { useEffect, useState } from "react";
-import { collection, onSnapshot, doc, updateDoc, addDoc, deleteDoc, query, orderBy, limit, setDoc } from "firebase/firestore";
+import { collection, onSnapshot, doc, updateDoc, addDoc, deleteDoc, query, orderBy, limit } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 
 export default function Dashboard() {
@@ -13,6 +13,12 @@ export default function Dashboard() {
     computeTokens: "0", 
     criticalAlerts: 0 
   });
+
+  // Estado para el modal de agregar agente
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [newAgentName, setNewAgentName] = useState("");
+  const [newAgentRole, setNewAgentRole] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     // 1. Suscribirse a la colección 'agents'
@@ -32,12 +38,7 @@ export default function Dashboard() {
       if (docSnap.exists()) {
         setMetrics(docSnap.data());
       } else {
-        // Inicializar si no existe
-        setDoc(doc(db, "metrics", "global"), {
-          tasksCompleted: 142,
-          computeTokens: "150k",
-          criticalAlerts: 0
-        });
+        setMetrics({ tasksCompleted: 0, computeTokens: "0", criticalAlerts: 0 });
       }
     });
 
@@ -82,41 +83,39 @@ export default function Dashboard() {
     }
   };
 
-  const deployFakeAgent = async () => {
+  const handleAddAgent = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newAgentName.trim() || !newAgentRole.trim()) return;
+    
+    setIsSubmitting(true);
     try {
-      const roles = ["Ventas B2B", "Atención al Cliente", "Investigación web", "Extracción de datos", "Asistente Legal", "Data Analyst"];
-      const names = ["yunAi Sales", "yunAi Support", "yunAi Researcher", "yunAi Scraper", "yunAi Legal", "yunAi Analytics"];
-      const randomIndex = Math.floor(Math.random() * roles.length);
-      const newAgentName = names[randomIndex] + " #" + Math.floor(Math.random() * 1000);
-      
       await addDoc(collection(db, "agents"), {
         name: newAgentName,
-        role: roles[randomIndex],
+        role: newAgentRole,
         status: "idle",
-        latency: Math.floor(Math.random() * 300 + 50) + "ms",
+        latency: "-",
         tasks: 0,
         createdAt: new Date().toISOString()
       });
 
-      await addLog("Sistema", `Nuevo agente desplegado: ${newAgentName}`);
-
-      // Simular aumento de tareas completadas y tokens
-      await updateDoc(doc(db, "metrics", "global"), {
-        tasksCompleted: metrics.tasksCompleted + Math.floor(Math.random() * 10) + 1,
-        computeTokens: (parseFloat(metrics.computeTokens.replace('k','').replace('M','')) + 1.2).toFixed(1) + "k"
-      });
-
+      await addLog("Sistema", `Nuevo agente registrado: ${newAgentName}`);
+      
+      // Limpiar y cerrar modal
+      setNewAgentName("");
+      setNewAgentRole("");
+      setShowAddModal(false);
     } catch (error: any) {
-      alert("Error al conectar con Firestore: " + error.message);
+      alert("Error al guardar en Firestore: " + error.message);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   const activeAgentsCount = agents.filter(a => a.status === 'online').length;
 
-  // Formatear timestamp a texto relativo (simplificado)
   const formatTime = (isoString: string) => {
     const date = new Date(isoString);
-    const diff = Math.floor((new Date().getTime() - date.getTime()) / 60000); // diferencia en minutos
+    const diff = Math.floor((new Date().getTime() - date.getTime()) / 60000);
     if (diff < 1) return "Justo ahora";
     if (diff < 60) return `Hace ${diff} min`;
     const hours = Math.floor(diff / 60);
@@ -124,7 +123,7 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="max-w-7xl mx-auto space-y-8">
+    <div className="max-w-7xl mx-auto space-y-8 relative">
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Dashboard Central</h1>
         <p className="text-muted-foreground mt-1">Resumen en tiempo real conectado 100% a Firebase.</p>
@@ -164,11 +163,11 @@ export default function Dashboard() {
           <div className="flex items-center justify-between">
             <h2 className="text-xl font-semibold tracking-tight">Flota de Agentes</h2>
             <button 
-              onClick={deployFakeAgent}
+              onClick={() => setShowAddModal(true)}
               className="text-sm px-3 py-1.5 bg-primary text-primary-foreground rounded-md hover:bg-primary/90 transition-colors font-medium flex items-center gap-2"
             >
-              <Bot size={16} />
-              Desplegar Nuevo
+              <Plus size={16} />
+              Agregar Agente
             </button>
           </div>
           <div className="border border-border bg-card rounded-lg overflow-hidden">
@@ -186,7 +185,7 @@ export default function Dashboard() {
                 {agents.length === 0 ? (
                   <tr>
                     <td colSpan={5} className="px-4 py-8 text-center text-muted-foreground">
-                      No hay agentes desplegados en Firebase.
+                      No hay agentes desplegados en Firebase. Haz clic en "Agregar Agente" para vincular uno nuevo.
                     </td>
                   </tr>
                 ) : (
@@ -261,6 +260,63 @@ export default function Dashboard() {
           </div>
         </div>
       </div>
+
+      {/* Add Agent Modal Overlay */}
+      {showAddModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm">
+          <div className="bg-card border border-border w-full max-w-md rounded-xl shadow-lg p-6 relative">
+            <button 
+              onClick={() => setShowAddModal(false)}
+              className="absolute right-4 top-4 text-muted-foreground hover:text-foreground"
+            >
+              <X size={20} />
+            </button>
+            <h3 className="text-xl font-semibold mb-1">Agregar Nuevo Agente</h3>
+            <p className="text-sm text-muted-foreground mb-6">Ingresa los detalles del agente que ya tienes creado para vincularlo al panel.</p>
+            
+            <form onSubmit={handleAddAgent} className="space-y-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Nombre del Agente</label>
+                <input 
+                  type="text" 
+                  value={newAgentName}
+                  onChange={e => setNewAgentName(e.target.value)}
+                  placeholder="ej. Asistente de Ventas" 
+                  className="w-full bg-secondary/50 border border-border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Rol o Especialidad</label>
+                <input 
+                  type="text" 
+                  value={newAgentRole}
+                  onChange={e => setNewAgentRole(e.target.value)}
+                  placeholder="ej. Atención al Cliente, Extracción de Datos" 
+                  className="w-full bg-secondary/50 border border-border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
+                  required
+                />
+              </div>
+              <div className="pt-2 flex justify-end gap-3">
+                <button 
+                  type="button" 
+                  onClick={() => setShowAddModal(false)}
+                  className="px-4 py-2 text-sm font-medium hover:bg-secondary rounded-md transition-colors"
+                >
+                  Cancelar
+                </button>
+                <button 
+                  type="submit" 
+                  disabled={isSubmitting}
+                  className="px-4 py-2 text-sm font-medium bg-primary text-primary-foreground hover:bg-primary/90 rounded-md transition-colors disabled:opacity-50"
+                >
+                  {isSubmitting ? "Agregando..." : "Agregar Agente"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
