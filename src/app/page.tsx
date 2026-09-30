@@ -2,55 +2,132 @@
 
 import { Activity, Bot, Cpu, AlertCircle, Play, Square, RefreshCcw } from "lucide-react";
 import { useEffect, useState } from "react";
-import { collection, onSnapshot, doc, updateDoc, addDoc, deleteDoc } from "firebase/firestore";
+import { collection, onSnapshot, doc, updateDoc, addDoc, deleteDoc, query, orderBy, limit, setDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 
 export default function Dashboard() {
   const [agents, setAgents] = useState<any[]>([]);
+  const [logs, setLogs] = useState<any[]>([]);
+  const [metrics, setMetrics] = useState<any>({ 
+    tasksCompleted: 0, 
+    computeTokens: "0", 
+    criticalAlerts: 0 
+  });
 
   useEffect(() => {
-    // Suscribirse a la colección 'agents' en tiempo real
-    const unsubscribe = onSnapshot(collection(db, "agents"), (snapshot) => {
+    // 1. Suscribirse a la colección 'agents'
+    const unsubAgents = onSnapshot(collection(db, "agents"), (snapshot) => {
       const agentsData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       setAgents(agentsData);
     });
 
-    return () => unsubscribe();
+    // 2. Suscribirse a 'activity_logs' (últimos 5)
+    const qLogs = query(collection(db, "activity_logs"), orderBy("timestamp", "desc"), limit(5));
+    const unsubLogs = onSnapshot(qLogs, (snapshot) => {
+      setLogs(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+    });
+
+    // 3. Suscribirse a 'metrics/global'
+    const unsubMetrics = onSnapshot(doc(db, "metrics", "global"), (docSnap) => {
+      if (docSnap.exists()) {
+        setMetrics(docSnap.data());
+      } else {
+        // Inicializar si no existe
+        setDoc(doc(db, "metrics", "global"), {
+          tasksCompleted: 142,
+          computeTokens: "150k",
+          criticalAlerts: 0
+        });
+      }
+    });
+
+    return () => {
+      unsubAgents();
+      unsubLogs();
+      unsubMetrics();
+    };
   }, []);
 
-  const toggleStatus = async (agentId: string, currentStatus: string) => {
-    const newStatus = currentStatus === "online" ? "idle" : "online";
-    await updateDoc(doc(db, "agents", agentId), { status: newStatus });
+  const addLog = async (agentName: string, action: string, isError = false) => {
+    try {
+      await addDoc(collection(db, "activity_logs"), {
+        agent: agentName,
+        action,
+        isError,
+        timestamp: new Date().toISOString()
+      });
+    } catch (error) {
+      console.error("Error saving log:", error);
+    }
   };
 
-  const deleteAgent = async (agentId: string) => {
-    if (confirm("¿Estás seguro de que deseas eliminar este agente?")) {
-      await deleteDoc(doc(db, "agents", agentId));
+  const toggleStatus = async (agent: any) => {
+    try {
+      const newStatus = agent.status === "online" ? "idle" : "online";
+      await updateDoc(doc(db, "agents", agent.id), { status: newStatus });
+      await addLog("Sistema", `Cambió el estado de ${agent.name} a ${newStatus.toUpperCase()}`);
+    } catch (error: any) {
+      alert("Error de Firebase: " + error.message);
+    }
+  };
+
+  const deleteAgent = async (agent: any) => {
+    if (confirm(`¿Estás seguro de que deseas eliminar a ${agent.name}?`)) {
+      try {
+        await deleteDoc(doc(db, "agents", agent.id));
+        await addLog("Sistema", `Agente ${agent.name} fue dado de baja.`, true);
+      } catch (error: any) {
+        alert("Error de Firebase: " + error.message);
+      }
     }
   };
 
   const deployFakeAgent = async () => {
-    const roles = ["Ventas B2B", "Atención al Cliente", "Investigación web", "Extracción de datos", "Asistente Legal", "Data Analyst"];
-    const names = ["yunAi Sales", "yunAi Support", "yunAi Researcher", "yunAi Scraper", "yunAi Legal", "yunAi Analytics"];
-    const randomIndex = Math.floor(Math.random() * roles.length);
-    
-    await addDoc(collection(db, "agents"), {
-      name: names[randomIndex] + " #" + Math.floor(Math.random() * 1000),
-      role: roles[randomIndex],
-      status: "idle",
-      latency: Math.floor(Math.random() * 300 + 50) + "ms",
-      tasks: 0,
-      createdAt: new Date().toISOString()
-    });
+    try {
+      const roles = ["Ventas B2B", "Atención al Cliente", "Investigación web", "Extracción de datos", "Asistente Legal", "Data Analyst"];
+      const names = ["yunAi Sales", "yunAi Support", "yunAi Researcher", "yunAi Scraper", "yunAi Legal", "yunAi Analytics"];
+      const randomIndex = Math.floor(Math.random() * roles.length);
+      const newAgentName = names[randomIndex] + " #" + Math.floor(Math.random() * 1000);
+      
+      await addDoc(collection(db, "agents"), {
+        name: newAgentName,
+        role: roles[randomIndex],
+        status: "idle",
+        latency: Math.floor(Math.random() * 300 + 50) + "ms",
+        tasks: 0,
+        createdAt: new Date().toISOString()
+      });
+
+      await addLog("Sistema", `Nuevo agente desplegado: ${newAgentName}`);
+
+      // Simular aumento de tareas completadas y tokens
+      await updateDoc(doc(db, "metrics", "global"), {
+        tasksCompleted: metrics.tasksCompleted + Math.floor(Math.random() * 10) + 1,
+        computeTokens: (parseFloat(metrics.computeTokens.replace('k','').replace('M','')) + 1.2).toFixed(1) + "k"
+      });
+
+    } catch (error: any) {
+      alert("Error al conectar con Firestore: " + error.message);
+    }
   };
 
   const activeAgentsCount = agents.filter(a => a.status === 'online').length;
+
+  // Formatear timestamp a texto relativo (simplificado)
+  const formatTime = (isoString: string) => {
+    const date = new Date(isoString);
+    const diff = Math.floor((new Date().getTime() - date.getTime()) / 60000); // diferencia en minutos
+    if (diff < 1) return "Justo ahora";
+    if (diff < 60) return `Hace ${diff} min`;
+    const hours = Math.floor(diff / 60);
+    return `Hace ${hours} hora${hours > 1 ? 's' : ''}`;
+  };
 
   return (
     <div className="max-w-7xl mx-auto space-y-8">
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Dashboard Central</h1>
-        <p className="text-muted-foreground mt-1">Resumen en tiempo real de la flota de agentes yunAi conectada a Firebase.</p>
+        <p className="text-muted-foreground mt-1">Resumen en tiempo real conectado 100% a Firebase.</p>
       </div>
 
       {/* Metrics Row */}
@@ -62,22 +139,22 @@ export default function Dashboard() {
           icon={<Bot className="text-emerald-500" />} 
         />
         <MetricCard 
-          title="Tareas Completadas (Hoy)" 
-          value="2,491" 
-          trend="+14% vs ayer" 
+          title="Tareas Completadas" 
+          value={metrics.tasksCompleted?.toLocaleString() || "0"} 
+          trend="Desde Firebase" 
           icon={<Activity className="text-blue-500" />} 
         />
         <MetricCard 
-          title="Uso de Cómputo (Tokens)" 
-          value="1.2M" 
-          trend="42% del presupuesto mensual" 
+          title="Uso de Cómputo" 
+          value={metrics.computeTokens || "0"} 
+          trend="Tokens procesados" 
           icon={<Cpu className="text-purple-500" />} 
         />
         <MetricCard 
           title="Alertas Críticas" 
-          value="0" 
-          trend="Sistema estable" 
-          icon={<AlertCircle className="text-muted-foreground" />} 
+          value={metrics.criticalAlerts?.toString() || "0"} 
+          trend={metrics.criticalAlerts > 0 ? "Atención requerida" : "Sistema estable"} 
+          icon={<AlertCircle className={metrics.criticalAlerts > 0 ? "text-destructive" : "text-muted-foreground"} />} 
         />
       </div>
 
@@ -109,7 +186,7 @@ export default function Dashboard() {
                 {agents.length === 0 ? (
                   <tr>
                     <td colSpan={5} className="px-4 py-8 text-center text-muted-foreground">
-                      No hay agentes desplegados. Haz clic en "Desplegar Nuevo" para crear uno en la base de datos.
+                      No hay agentes desplegados en Firebase.
                     </td>
                   </tr>
                 ) : (
@@ -132,7 +209,7 @@ export default function Dashboard() {
                         <div className="flex items-center justify-center gap-2">
                           {agent.status === "online" ? (
                             <button 
-                              onClick={() => toggleStatus(agent.id, agent.status)}
+                              onClick={() => toggleStatus(agent)}
                               className="p-1.5 rounded-md text-emerald-500 hover:bg-secondary hover:text-emerald-400 transition-colors" 
                               title="Pausar"
                             >
@@ -140,7 +217,7 @@ export default function Dashboard() {
                             </button>
                           ) : (
                             <button 
-                              onClick={() => toggleStatus(agent.id, agent.status)}
+                              onClick={() => toggleStatus(agent)}
                               className="p-1.5 rounded-md text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors" 
                               title="Iniciar"
                             >
@@ -148,7 +225,7 @@ export default function Dashboard() {
                             </button>
                           )}
                           <button 
-                            onClick={() => deleteAgent(agent.id)}
+                            onClick={() => deleteAgent(agent)}
                             className="p-1.5 rounded-md text-muted-foreground hover:bg-secondary hover:text-destructive transition-colors" 
                             title="Eliminar"
                           >
@@ -168,21 +245,19 @@ export default function Dashboard() {
         <div className="space-y-4">
           <h2 className="text-xl font-semibold tracking-tight">Actividad Reciente</h2>
           <div className="border border-border bg-card rounded-lg p-4 space-y-4">
-            <ActivityItem 
-              time="Ahora" 
-              agent="Sistema" 
-              action="Conexión en tiempo real con Firestore establecida." 
-            />
-            <ActivityItem 
-              time="Hace 2 min" 
-              agent="yunAi Sales" 
-              action="Cerró ticket #142 de HubSpot." 
-            />
-            <ActivityItem 
-              time="Hace 5 min" 
-              agent="yunAi Support" 
-              action="Respondió a consulta de cliente en web chat." 
-            />
+            {logs.length === 0 ? (
+              <div className="text-center text-sm text-muted-foreground py-4">No hay actividad reciente.</div>
+            ) : (
+              logs.map((log) => (
+                <ActivityItem 
+                  key={log.id}
+                  time={formatTime(log.timestamp)} 
+                  agent={log.agent} 
+                  action={log.action} 
+                  isError={log.isError}
+                />
+              ))
+            )}
           </div>
         </div>
       </div>
