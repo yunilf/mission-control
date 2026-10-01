@@ -358,6 +358,37 @@ export default function AgentsFleetPage() {
                     </div>
                   </div>
 
+                  <div className="bg-secondary/20 border border-border rounded-lg p-5">
+                    <div className="flex items-center justify-between mb-3">
+                      <h4 className="text-sm font-semibold">Sub-agentes (Equipo)</h4>
+                      <button onClick={() => window.dispatchEvent(new CustomEvent('open-edit-agent', {detail: selectedAgent}))} className="text-xs text-primary hover:underline flex items-center gap-1">
+                        <Plus size={12}/> Configurar
+                      </button>
+                    </div>
+                    <div className="space-y-3">
+                      {selectedAgent.subagents && selectedAgent.subagents.length > 0 ? (
+                        selectedAgent.subagents.map((sub: any, i: number) => (
+                          <div key={i} className="bg-background border border-border rounded-md p-3 flex justify-between items-center">
+                             <div className="flex items-center gap-3">
+                               <div className="w-8 h-8 rounded bg-primary/10 text-primary flex items-center justify-center">
+                                 <Bot size={16} />
+                               </div>
+                               <div>
+                                 <div className="text-sm font-medium capitalize">{sub.name || 'researcher'}</div>
+                                 <div className="text-xs text-muted-foreground">{sub.model || 'google/gemini-2.5-flash'}</div>
+                               </div>
+                             </div>
+                             <button className="text-xs text-muted-foreground hover:text-primary">Opciones</button>
+                          </div>
+                        ))
+                      ) : (
+                        <div className="text-sm text-muted-foreground italic text-center py-4 bg-background/50 rounded-md border border-dashed border-border">
+                          Este agente principal no tiene sub-agentes asignados.
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
                   
                 </div>
               )}
