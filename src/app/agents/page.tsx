@@ -107,7 +107,7 @@ export default function AgentsFleetPage() {
                   <Bot size={32} />
                 </div>
                 <div>
-                  <div className="flex items-center gap-3">
+                  <div className="flex flex-wrap items-center gap-3">
                     <h2 className="text-2xl font-bold">{selectedAgent.name}</h2>
                     {selectedAgent.status === 'online' ? (
                       <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 text-xs font-semibold uppercase tracking-wider flex items-center gap-1">
@@ -118,6 +118,10 @@ export default function AgentsFleetPage() {
                         <span className="w-1.5 h-1.5 rounded-full bg-zinc-500"></span> Inactivo
                       </span>
                     )}
+                    <span className="text-muted-foreground flex items-center gap-1 text-sm ml-2">
+                      <ShieldCheck size={14} className="text-blue-500" />
+                      ID: {selectedAgent.id.substring(0, 8)}...
+                    </span>
                   </div>
                   <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 mt-1 text-sm">
                     <span className="text-muted-foreground">{selectedAgent.role}</span>
@@ -125,11 +129,6 @@ export default function AgentsFleetPage() {
                     <span className="text-muted-foreground flex items-center gap-1">
                       <Sparkles size={14} className="text-purple-500" />
                       Modelo: {selectedAgent.aiModel || "google/gemini-2.5-flash"}
-                    </span>
-                    <span className="hidden sm:block text-muted-foreground border-l border-border h-4"></span>
-                    <span className="text-muted-foreground flex items-center gap-1">
-                      <ShieldCheck size={14} className="text-blue-500" />
-                      ID: {selectedAgent.id.substring(0, 8)}...
                     </span>
                   </div>
                 </div>
@@ -184,29 +183,97 @@ export default function AgentsFleetPage() {
                     </div>
                   </div>
 
-                  {/* Mock Charts */}
-                  <div className="bg-card border border-border rounded-lg p-5">
-                    <h3 className="text-sm font-semibold mb-4">Latencia de Inferencia (Últimos 30m)</h3>
-                    <div className="h-20 flex items-end gap-1 opacity-80">
-                      {[...Array(40)].map((_, i) => {
-                        const height = Math.random() * 60 + 10;
-                        const isHigh = height > 60;
-                        return (
-                          <div 
-                            key={i} 
-                            className={`flex-1 rounded-t-sm ${isHigh ? 'bg-orange-500' : 'bg-primary/50'} hover:bg-primary transition-colors cursor-crosshair relative group`}
-                            style={{ height: `${height}%` }}
-                          >
-                            <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-popover text-popover-foreground text-[10px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 whitespace-nowrap z-10 pointer-events-none">
-                              {Math.floor(height * 4)}ms
+                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                    {/* 1. Latency Chart */}
+                    <div className="bg-card border border-border rounded-lg p-5 flex flex-col">
+                      <h3 className="text-sm font-semibold mb-4">Latencia de Inferencia (Últimos 30m)</h3>
+                      <div className="flex-1 flex items-end gap-1 opacity-80 min-h-[80px]">
+                        {[...Array(15)].map((_, i) => {
+                          const height = Math.random() * 60 + 10;
+                          const isHigh = height > 60;
+                          return (
+                            <div 
+                              key={i} 
+                              className={`flex-1 rounded-t-sm ${isHigh ? 'bg-orange-500' : 'bg-primary/50'} hover:bg-primary transition-colors cursor-crosshair relative group`}
+                              style={{ height: `${height}%` }}
+                            >
+                              <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-popover text-popover-foreground text-[10px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 whitespace-nowrap z-10 pointer-events-none">
+                                {Math.floor(height * 4)}ms
+                              </div>
                             </div>
-                          </div>
-                        );
-                      })}
+                          );
+                        })}
+                      </div>
+                      <div className="flex justify-between mt-2 text-[10px] text-muted-foreground font-mono">
+                        <span>Hace 30m</span>
+                        <span>Ahora</span>
+                      </div>
                     </div>
-                    <div className="flex justify-between mt-2 text-[10px] text-muted-foreground font-mono">
-                      <span>Hace 30m</span>
-                      <span>Ahora</span>
+
+                    {/* 2. Connection States */}
+                    <div className="bg-card border border-border rounded-lg p-5 flex flex-col">
+                      <h3 className="text-sm font-semibold mb-4">Estado de Conexiones</h3>
+                      <div className="flex-1 space-y-4">
+                        <div className="flex items-center justify-between text-sm">
+                          <span className="flex items-center gap-3">
+                            <div className="relative flex items-center justify-center">
+                              {selectedAgent.whatsappEnabled && <div className="absolute w-full h-full bg-emerald-500 rounded-full animate-ping opacity-20"></div>}
+                              <div className={`w-2.5 h-2.5 rounded-full ${selectedAgent.whatsappEnabled ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]' : 'bg-zinc-600'}`}></div>
+                            </div>
+                            WhatsApp Baileys
+                          </span>
+                          <span className={`text-xs font-medium ${selectedAgent.whatsappEnabled ? 'text-emerald-500' : 'text-zinc-500'}`}>{selectedAgent.whatsappEnabled ? 'Online' : 'Offline'}</span>
+                        </div>
+                        
+                        <div className="flex items-center justify-between text-sm">
+                          <span className="flex items-center gap-3">
+                            <div className="relative flex items-center justify-center">
+                              {selectedAgent.telegramEnabled && <div className="absolute w-full h-full bg-blue-500 rounded-full animate-ping opacity-20"></div>}
+                              <div className={`w-2.5 h-2.5 rounded-full ${selectedAgent.telegramEnabled ? 'bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.5)]' : 'bg-zinc-600'}`}></div>
+                            </div>
+                            Telegram Bot
+                          </span>
+                          <span className={`text-xs font-medium ${selectedAgent.telegramEnabled ? 'text-blue-500' : 'text-zinc-500'}`}>{selectedAgent.telegramEnabled ? 'Online' : 'Offline'}</span>
+                        </div>
+
+                        <div className="flex items-center justify-between text-sm">
+                          <span className="flex items-center gap-3">
+                            <div className="relative flex items-center justify-center">
+                              {selectedAgent.tools?.includes('wordpress') && <div className="absolute w-full h-full bg-purple-500 rounded-full animate-ping opacity-20"></div>}
+                              <div className={`w-2.5 h-2.5 rounded-full ${selectedAgent.tools?.includes('wordpress') ? 'bg-purple-500 shadow-[0_0_8px_rgba(168,85,247,0.5)]' : 'bg-zinc-600'}`}></div>
+                            </div>
+                            WordPress / Woo
+                          </span>
+                          <span className={`text-xs font-medium ${selectedAgent.tools?.includes('wordpress') ? 'text-purple-500' : 'text-zinc-500'}`}>{selectedAgent.tools?.includes('wordpress') ? 'Online' : 'Offline'}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* 3. Token Consumption */}
+                    <div className="bg-card border border-border rounded-lg p-5 flex flex-col">
+                      <div className="flex items-center justify-between mb-2">
+                        <h3 className="text-sm font-semibold">Consumo de Tokens</h3>
+                        <span className="text-[10px] text-muted-foreground uppercase tracking-wider">Facturación</span>
+                      </div>
+                      <div className="flex-1 flex flex-col justify-center">
+                        <div className="flex items-baseline gap-2 mb-2">
+                          <span className="text-3xl font-bold font-mono text-purple-400">245.8K</span>
+                          <span className="text-xs text-muted-foreground">esta semana</span>
+                        </div>
+                        <div className="w-full bg-secondary rounded-full h-2 mb-4 overflow-hidden">
+                          <div className="bg-gradient-to-r from-purple-600 to-purple-400 h-full rounded-full" style={{width: '65%'}}></div>
+                        </div>
+                        <div className="grid grid-cols-2 gap-3 text-xs">
+                          <div className="bg-secondary/20 p-2 rounded-lg border border-border flex flex-col">
+                            <span className="text-muted-foreground text-[10px] uppercase tracking-wider mb-1">Entrada</span>
+                            <span className="font-mono font-medium">180.2K</span>
+                          </div>
+                          <div className="bg-secondary/20 p-2 rounded-lg border border-border flex flex-col">
+                            <span className="text-muted-foreground text-[10px] uppercase tracking-wider mb-1">Salida</span>
+                            <span className="font-mono font-medium">65.6K</span>
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
