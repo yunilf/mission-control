@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { collection, onSnapshot, doc, updateDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-import { Bot, Activity, Terminal, Cpu, MemoryStick, Play, Square, Settings2, ShieldCheck, Clock, Plus } from "lucide-react";
+import { Bot, Activity, Terminal, Cpu, MemoryStick, Play, Square, Settings2, ShieldCheck, Clock, Plus, Power, Sparkles } from "lucide-react";
 
 export default function AgentsFleetPage() {
   const [agents, setAgents] = useState<any[]>([]);
@@ -49,6 +49,14 @@ export default function AgentsFleetPage() {
     }
   };
 
+  const handleModelChange = async (agentId: string, model: string) => {
+    try {
+      await updateDoc(doc(db, "agents", agentId), { aiModel: model });
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
   const selectedAgent = agents.find(a => a.id === selectedAgentId);
 
   return (
@@ -56,7 +64,6 @@ export default function AgentsFleetPage() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Agentes</h1>
-          <p className="text-muted-foreground mt-1 text-sm">Monitoreo avanzado, rendimiento de hardware y logs en tiempo real por agente.</p>
         </div>
 
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
@@ -94,15 +101,31 @@ export default function AgentsFleetPage() {
         {selectedAgent ? (
           <div className="flex-1 bg-card border border-border rounded-xl shadow-sm flex flex-col overflow-hidden">
             {/* Header */}
-            <div className="p-6 border-b border-border flex items-start justify-between bg-gradient-to-r from-secondary/20 to-transparent">
+            <div className="p-6 border-b border-border flex flex-col md:flex-row md:items-center justify-between bg-gradient-to-r from-secondary/20 to-transparent gap-4">
               <div className="flex items-center gap-4">
-                <div className={`w-14 h-14 rounded-xl flex items-center justify-center border ${selectedAgent.status === 'online' ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-500' : 'bg-secondary border-border text-muted-foreground'}`}>
+                <div className={`w-14 h-14 rounded-xl flex items-center justify-center border ${selectedAgent.status === 'online' ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-500' : 'bg-zinc-500/10 border-zinc-500/30 text-zinc-500'}`}>
                   <Bot size={32} />
                 </div>
                 <div>
-                  <h2 className="text-2xl font-bold">{selectedAgent.name}</h2>
+                  <div className="flex items-center gap-3">
+                    <h2 className="text-2xl font-bold">{selectedAgent.name}</h2>
+                    {selectedAgent.status === 'online' ? (
+                      <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 text-xs font-semibold uppercase tracking-wider flex items-center gap-1">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> Activo
+                      </span>
+                    ) : (
+                      <span className="px-2 py-0.5 rounded-full bg-zinc-500/10 text-zinc-500 border border-zinc-500/20 text-xs font-semibold uppercase tracking-wider flex items-center gap-1">
+                        <span className="w-1.5 h-1.5 rounded-full bg-zinc-500"></span> Inactivo
+                      </span>
+                    )}
+                  </div>
                   <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 mt-1 text-sm">
                     <span className="text-muted-foreground">{selectedAgent.role}</span>
+                    <span className="hidden sm:block text-muted-foreground border-l border-border h-4"></span>
+                    <span className="text-muted-foreground flex items-center gap-1">
+                      <Sparkles size={14} className="text-purple-500" />
+                      Modelo: {selectedAgent.aiModel || "google/gemini-2.5-flash"}
+                    </span>
                     <span className="hidden sm:block text-muted-foreground border-l border-border h-4"></span>
                     <span className="text-muted-foreground flex items-center gap-1">
                       <ShieldCheck size={14} className="text-blue-500" />
@@ -111,17 +134,16 @@ export default function AgentsFleetPage() {
                   </div>
                 </div>
               </div>
-              <div className="flex items-center gap-2">
-                <button 
-                  onClick={() => toggleStatus(selectedAgent)}
-                  className={`hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
-                    selectedAgent.status === 'online' 
-                      ? "bg-zinc-500/10 text-zinc-500 hover:bg-zinc-500/20" 
-                      : "bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20"
-                  }`}
-                >
-                  {selectedAgent.status === 'online' ? <><Square size={14}/> Pausar Nodo</> : <><Play size={14}/> Activar Nodo</>}
-                </button>
+              <div className="flex items-center gap-4">
+                <div className="flex flex-col items-end">
+                  <span className="text-xs text-muted-foreground mb-1">Encender / Apagar Nodo</span>
+                  <label className="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" className="sr-only peer" checked={selectedAgent.status === 'online'} onChange={() => toggleStatus(selectedAgent)} />
+                    <div className="w-14 h-7 bg-zinc-600 rounded-full peer peer-checked:after:translate-x-full peer-checked:bg-emerald-500 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all shadow-inner"></div>
+                    <Power size={14} className={`absolute left-2.5 transition-opacity ${selectedAgent.status === 'online' ? 'opacity-0' : 'opacity-100 text-zinc-300'}`} />
+                    <Power size={14} className={`absolute right-2.5 transition-opacity ${selectedAgent.status === 'online' ? 'opacity-100 text-emerald-900' : 'opacity-0'}`} />
+                  </label>
+                </div>
               </div>
             </div>
 
@@ -165,7 +187,7 @@ export default function AgentsFleetPage() {
                   {/* Mock Charts */}
                   <div className="bg-card border border-border rounded-lg p-5">
                     <h3 className="text-sm font-semibold mb-4">Latencia de Inferencia (Últimos 30m)</h3>
-                    <div className="h-48 flex items-end gap-1 opacity-80">
+                    <div className="h-20 flex items-end gap-1 opacity-80">
                       {[...Array(40)].map((_, i) => {
                         const height = Math.random() * 60 + 10;
                         const isHigh = height > 60;
@@ -225,6 +247,28 @@ export default function AgentsFleetPage() {
 
               {activeTab === 'config' && (
                 <div className="space-y-6">
+                  
+                  {/* AI Model Config */}
+                  <div className="bg-secondary/20 border border-border rounded-lg p-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div>
+                      <h4 className="text-sm font-semibold flex items-center gap-2"><Sparkles size={16} className="text-purple-500"/> Modelo de Inteligencia Artificial</h4>
+                      <p className="text-xs text-muted-foreground mt-1">Selecciona el motor cognitivo que procesará la lógica de este agente.</p>
+                    </div>
+                    <div className="w-full md:w-64">
+                      <select 
+                        value={selectedAgent.aiModel || "google/gemini-2.5-flash"}
+                        onChange={(e) => handleModelChange(selectedAgent.id, e.target.value)}
+                        className="w-full bg-background border border-border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary focus:bg-secondary transition-colors"
+                      >
+                        <option value="google/gemini-2.5-flash">Gemini 2.5 Flash (Recomendado)</option>
+                        <option value="google/gemini-2.5-pro">Gemini 2.5 Pro</option>
+                        <option value="gpt-4o">OpenAI GPT-4o</option>
+                        <option value="gpt-4o-mini">OpenAI GPT-4o Mini</option>
+                        <option value="claude-3-5-sonnet-20240620">Claude 3.5 Sonnet</option>
+                      </select>
+                    </div>
+                  </div>
+
                   <div className="bg-secondary/20 border border-border rounded-lg p-5">
                     <div className="flex items-center justify-between mb-3">
                       <h4 className="text-sm font-semibold">Integraciones Activas</h4>
