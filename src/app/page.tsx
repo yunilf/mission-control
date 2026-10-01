@@ -153,7 +153,7 @@ export default function Dashboard() {
                       <td className="px-4 py-3"><StatusBadge status={agent.status} /></td>
                       <td className="px-4 py-3 text-center">
                         <div className="flex items-center justify-center gap-1">
-                          {agent.whatsappEnabled && <MessageCircle size={14} className="text-emerald-500" title="WhatsApp Conectado" />}
+                          {agent.whatsappEnabled && <span title="WhatsApp Conectado"><MessageCircle size={14} className="text-emerald-500" /></span>}
                           {agent.tools?.includes('google') && <div className="w-3.5 h-3.5 rounded-full bg-blue-500" title="Google Workspace"></div>}
                           {agent.tools?.includes('hubspot') && <div className="w-3.5 h-3.5 rounded-full bg-orange-500" title="HubSpot"></div>}
                         </div>
