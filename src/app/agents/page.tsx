@@ -53,51 +53,35 @@ export default function AgentsFleetPage() {
 
   return (
     <div className="space-y-6 max-w-[1400px] mx-auto h-[calc(100vh-6rem)] flex flex-col">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Fleet (Agentes)</h1>
-        <p className="text-muted-foreground mt-1 text-sm">Monitoreo avanzado, rendimiento de hardware y logs en tiempo real por agente.</p>
-      </div>
-
-      <div className="flex flex-col md:flex-row flex-1 gap-4 md:gap-6 min-h-0 overflow-hidden">
-        
-        {/* Left: Agent List */}
-        <div className="w-full md:w-1/3 bg-card h-1/3 md:h-auto shrink-0 md:shrink border border-border rounded-xl shadow-sm flex flex-col overflow-hidden">
-          <div className="p-4 border-b border-border bg-secondary/10">
-            <h2 className="font-semibold">Nodos Activos</h2>
-            <div className="text-xs text-muted-foreground mt-1">Selecciona un agente para ver sus métricas.</div>
-          </div>
-          <div className="flex-1 overflow-y-auto p-3 space-y-2">
-            {agents.map(agent => (
-              <button
-                key={agent.id}
-                onClick={() => setSelectedAgentId(agent.id)}
-                className={`w-full text-left p-3 rounded-lg border transition-all ${
-                  selectedAgentId === agent.id 
-                    ? "bg-primary/5 border-primary shadow-sm" 
-                    : "bg-background border-border hover:border-primary/50 hover:bg-secondary/20"
-                }`}
-              >
-                <div className="flex items-center justify-between mb-1">
-                  <div className="flex items-center gap-2">
-                    <Bot size={16} className={selectedAgentId === agent.id ? "text-primary" : "text-muted-foreground"} />
-                    <span className="font-semibold text-sm">{agent.name}</span>
-                  </div>
-                  <div className={`w-2 h-2 rounded-full ${agent.status === 'online' ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]' : 'bg-zinc-400'}`}></div>
-                </div>
-                <div className="text-xs text-muted-foreground truncate">{agent.role}</div>
-                <div className="flex items-center gap-3 mt-3 text-[10px] font-mono text-muted-foreground">
-                  <span className="flex items-center gap-1"><Activity size={10}/> {agent.latency || "0ms"}</span>
-                  <span className="flex items-center gap-1"><Cpu size={10}/> {(Math.random() * 2 + 1).toFixed(1)}%</span>
-                </div>
-              </button>
-            ))}
-            {agents.length === 0 && (
-              <div className="text-center p-6 text-muted-foreground text-sm">No hay agentes registrados.</div>
-            )}
-          </div>
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Fleet (Agentes)</h1>
+          <p className="text-muted-foreground mt-1 text-sm">Monitoreo avanzado, rendimiento de hardware y logs en tiempo real por agente.</p>
         </div>
 
-        {/* Right: Agent Details */}
+        {/* Dropdown de Agentes */}
+        <div className="w-full md:w-80 relative">
+          <select 
+            value={selectedAgentId || ""} 
+            onChange={(e) => setSelectedAgentId(e.target.value)}
+            className="w-full bg-card border border-border rounded-lg px-4 py-3 text-sm font-medium shadow-sm focus:outline-none focus:ring-2 focus:ring-primary/50 text-foreground appearance-none cursor-pointer"
+          >
+            <option value="" disabled>Selecciona un agente...</option>
+            {agents.map(agent => (
+              <option key={agent.id} value={agent.id}>
+                {agent.status === 'online' ? '🟢' : '⚪'} {agent.name} ({agent.role})
+              </option>
+            ))}
+          </select>
+          <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-muted-foreground">
+            {/* Si quisieramos icono flecha */}
+          </div>
+        </div>
+      </div>
+
+      <div className="flex-1 min-h-0 overflow-hidden flex flex-col">
+        
+        {/* Agent Details Full Width */}
         {selectedAgent ? (
           <div className="flex-1 bg-card border border-border rounded-xl shadow-sm flex flex-col overflow-hidden">
             {/* Header */}
