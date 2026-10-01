@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import Navigation from "@/components/Navigation";
+import AgentModals from "@/components/AgentModals";
 import { Bell, Search } from "lucide-react";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -45,6 +46,7 @@ export default function RootLayout({
           </header>
           <main className="flex-1 p-4 md:p-8">
             {children}
+            <AgentModals />
           </main>
         </div>
       </body>

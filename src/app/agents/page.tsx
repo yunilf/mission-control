@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { collection, onSnapshot, doc, updateDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-import { Bot, Activity, Terminal, Cpu, MemoryStick, Play, Square, Settings2, ShieldCheck, Clock } from "lucide-react";
+import { Bot, Activity, Terminal, Cpu, MemoryStick, Play, Square, Settings2, ShieldCheck, Clock, Plus } from "lucide-react";
 
 export default function AgentsFleetPage() {
   const [agents, setAgents] = useState<any[]>([]);
@@ -59,22 +59,31 @@ export default function AgentsFleetPage() {
           <p className="text-muted-foreground mt-1 text-sm">Monitoreo avanzado, rendimiento de hardware y logs en tiempo real por agente.</p>
         </div>
 
-        {/* Dropdown de Agentes */}
-        <div className="w-full md:w-80 relative">
-          <select 
-            value={selectedAgentId || ""} 
-            onChange={(e) => setSelectedAgentId(e.target.value)}
-            className="w-full bg-card border border-border rounded-lg px-4 py-3 text-sm font-medium shadow-sm focus:outline-none focus:ring-2 focus:ring-primary/50 text-foreground appearance-none cursor-pointer"
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+          <button 
+            onClick={() => window.dispatchEvent(new CustomEvent('open-add-agent'))} 
+            className="flex items-center justify-center gap-2 px-4 py-2.5 bg-primary text-primary-foreground rounded-lg font-medium text-sm hover:opacity-90 transition-opacity shadow-sm whitespace-nowrap"
           >
-            <option value="" disabled>Selecciona un agente...</option>
-            {agents.map(agent => (
-              <option key={agent.id} value={agent.id}>
-                {agent.status === 'online' ? '🟢' : '⚪'} {agent.name} ({agent.role})
-              </option>
-            ))}
-          </select>
-          <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-muted-foreground">
-            {/* Si quisieramos icono flecha */}
+            <Plus size={18} /> Agregar Agente
+          </button>
+          
+          {/* Dropdown de Agentes */}
+          <div className="w-full sm:w-72 relative">
+            <select 
+              value={selectedAgentId || ""} 
+              onChange={(e) => setSelectedAgentId(e.target.value)}
+              className="w-full bg-card border border-border rounded-lg px-4 py-2.5 text-sm font-medium shadow-sm focus:outline-none focus:ring-2 focus:ring-primary/50 text-foreground appearance-none cursor-pointer"
+            >
+              <option value="" disabled>Selecciona un agente...</option>
+              {agents.map(agent => (
+                <option key={agent.id} value={agent.id}>
+                  {agent.status === 'online' ? '🟢' : '⚪'} {agent.name} ({agent.role})
+                </option>
+              ))}
+            </select>
+            <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-muted-foreground">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+            </div>
           </div>
         </div>
       </div>
@@ -92,9 +101,10 @@ export default function AgentsFleetPage() {
                 </div>
                 <div>
                   <h2 className="text-2xl font-bold">{selectedAgent.name}</h2>
-                  <div className="flex items-center gap-3 mt-1 text-sm">
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 mt-1 text-sm">
                     <span className="text-muted-foreground">{selectedAgent.role}</span>
-                    <span className="text-muted-foreground border-l border-border pl-3 flex items-center gap-1">
+                    <span className="hidden sm:block text-muted-foreground border-l border-border h-4"></span>
+                    <span className="text-muted-foreground flex items-center gap-1">
                       <ShieldCheck size={14} className="text-blue-500" />
                       ID: {selectedAgent.id.substring(0, 8)}...
                     </span>
@@ -104,7 +114,7 @@ export default function AgentsFleetPage() {
               <div className="flex items-center gap-2">
                 <button 
                   onClick={() => toggleStatus(selectedAgent)}
-                  className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                  className={`hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
                     selectedAgent.status === 'online' 
                       ? "bg-zinc-500/10 text-zinc-500 hover:bg-zinc-500/20" 
                       : "bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20"
@@ -116,14 +126,14 @@ export default function AgentsFleetPage() {
             </div>
 
             {/* Tabs */}
-            <div className="flex items-center gap-6 px-6 border-b border-border bg-background">
-              <button onClick={() => setActiveTab('monitor')} className={`py-3 text-sm font-medium border-b-2 transition-colors ${activeTab === 'monitor' ? 'border-primary text-foreground' : 'border-transparent text-muted-foreground hover:text-foreground'}`}>
+            <div className="flex items-center gap-6 px-6 border-b border-border bg-background overflow-x-auto">
+              <button onClick={() => setActiveTab('monitor')} className={`py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${activeTab === 'monitor' ? 'border-primary text-foreground' : 'border-transparent text-muted-foreground hover:text-foreground'}`}>
                 Monitor de Rendimiento
               </button>
-              <button onClick={() => setActiveTab('terminal')} className={`py-3 text-sm font-medium border-b-2 transition-colors ${activeTab === 'terminal' ? 'border-primary text-foreground' : 'border-transparent text-muted-foreground hover:text-foreground'}`}>
-                Terminal WSL en vivo
+              <button onClick={() => setActiveTab('terminal')} className={`py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${activeTab === 'terminal' ? 'border-primary text-foreground' : 'border-transparent text-muted-foreground hover:text-foreground'}`}>
+                Terminal en vivo
               </button>
-              <button onClick={() => setActiveTab('config')} className={`py-3 text-sm font-medium border-b-2 transition-colors ${activeTab === 'config' ? 'border-primary text-foreground' : 'border-transparent text-muted-foreground hover:text-foreground'}`}>
+              <button onClick={() => setActiveTab('config')} className={`py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${activeTab === 'config' ? 'border-primary text-foreground' : 'border-transparent text-muted-foreground hover:text-foreground'}`}>
                 Resumen de Configuración
               </button>
             </div>
@@ -134,7 +144,7 @@ export default function AgentsFleetPage() {
               {activeTab === 'monitor' && (
                 <div className="space-y-6">
                   {/* Stats Grid */}
-                  <div className="grid grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="bg-card border border-border rounded-lg p-4">
                       <div className="text-xs text-muted-foreground mb-1 flex items-center justify-between">Uso de CPU <Cpu size={14}/></div>
                       <div className="text-2xl font-bold font-mono text-primary">{(Math.random() * 5 + 1).toFixed(1)}%</div>
@@ -190,7 +200,7 @@ export default function AgentsFleetPage() {
                     </div>
                     <span className="text-xs font-mono text-muted-foreground">WSL: ubuntu@openclaw-node</span>
                   </div>
-                  <div className="flex-1 bg-[#0b0f19] rounded-lg p-4 font-mono text-xs overflow-y-auto border border-border shadow-inner">
+                  <div className="flex-1 bg-[#0b0f19] rounded-lg p-4 font-mono text-xs overflow-y-auto border border-border shadow-inner min-h-[300px]">
                     {mockLogs.map((log, i) => {
                       let color = "text-zinc-300";
                       if (log.includes("INFO")) color = "text-blue-400";
@@ -216,7 +226,12 @@ export default function AgentsFleetPage() {
               {activeTab === 'config' && (
                 <div className="space-y-6">
                   <div className="bg-secondary/20 border border-border rounded-lg p-5">
-                    <h4 className="text-sm font-semibold mb-3">Integraciones Activas</h4>
+                    <div className="flex items-center justify-between mb-3">
+                      <h4 className="text-sm font-semibold">Integraciones Activas</h4>
+                      <button onClick={() => window.dispatchEvent(new CustomEvent('open-edit-agent', {detail: selectedAgent}))} className="text-xs text-primary hover:underline flex items-center gap-1">
+                        <Settings2 size={12}/> Editar
+                      </button>
+                    </div>
                     <div className="flex flex-wrap gap-2">
                       {selectedAgent.whatsappEnabled && <span className="px-2 py-1 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 rounded text-xs font-medium">WhatsApp (Baileys)</span>}
                       {selectedAgent.telegramEnabled && <span className="px-2 py-1 bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20 rounded text-xs font-medium">Telegram</span>}
@@ -229,7 +244,7 @@ export default function AgentsFleetPage() {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                       <h4 className="text-sm font-semibold mb-2">Previsualización de Identity</h4>
                       <div className="bg-secondary/10 border border-border rounded-lg p-4 h-48 overflow-y-auto text-xs text-muted-foreground font-mono whitespace-pre-wrap">
@@ -243,10 +258,6 @@ export default function AgentsFleetPage() {
                       </div>
                     </div>
                   </div>
-                  
-                  <div className="text-center pt-2">
-                    <p className="text-xs text-muted-foreground mb-2">Para modificar la configuración o las instrucciones, dirígete al Dashboard principal.</p>
-                  </div>
                 </div>
               )}
 
@@ -256,7 +267,7 @@ export default function AgentsFleetPage() {
           <div className="flex-1 bg-card border border-border rounded-xl shadow-sm flex flex-col items-center justify-center text-muted-foreground p-6">
             <Bot size={48} className="mb-4 opacity-20" />
             <h3 className="text-lg font-medium">Ningún agente seleccionado</h3>
-            <p className="text-sm text-center max-w-sm mt-2">Selecciona un agente de la lista en el panel izquierdo para ver sus métricas de rendimiento y logs en tiempo real.</p>
+            <p className="text-sm text-center max-w-sm mt-2">Selecciona un agente de la lista en el panel superior para ver sus métricas de rendimiento y logs en tiempo real.</p>
           </div>
         )}
       </div>
