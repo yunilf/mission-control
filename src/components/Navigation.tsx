@@ -9,7 +9,7 @@ export default function Navigation() {
 
   const navItems = [
     { name: "Dashboard", href: "/", icon: LayoutDashboard },
-    { name: "Fleet", href: "/agents", icon: Bot },
+    { name: "Agentes", href: "/agents", icon: Bot },
     { name: "Clientes", href: "/clients", icon: Users },
     { name: "Tareas", href: "/tasks", icon: Activity },
     { name: "Configuración", href: "/settings", icon: Settings },

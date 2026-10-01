@@ -55,7 +55,7 @@ export default function AgentsFleetPage() {
     <div className="space-y-6 max-w-[1400px] mx-auto h-[calc(100vh-6rem)] flex flex-col">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Fleet (Agentes)</h1>
+          <h1 className="text-3xl font-bold tracking-tight">Agentes</h1>
           <p className="text-muted-foreground mt-1 text-sm">Monitoreo avanzado, rendimiento de hardware y logs en tiempo real por agente.</p>
         </div>
 
