@@ -191,17 +191,17 @@ export default function AgentsFleetPage() {
                     <div className="bg-card border border-border rounded-lg p-5 flex flex-col">
                       <h3 className="text-sm font-semibold mb-4">Latencia de Inferencia (Últimos 30m)</h3>
                       <div className="flex-1 flex items-end gap-1 opacity-80 min-h-[80px]">
-                        {[...Array(15)].map((_, i) => {
-                          const height = Math.random() * 60 + 10;
-                          const isHigh = height > 60;
+                        {(selectedAgent.latencyHistory?.length > 0 ? selectedAgent.latencyHistory : [...Array(15).fill(0)]).slice(-15).map((lat: number, i: number) => {
+                          const height = lat === 0 ? 5 : Math.min(100, Math.max(10, (lat / 5000) * 100));
+                          const isHigh = lat > 3000;
                           return (
                             <div 
                               key={i} 
-                              className={`flex-1 rounded-t-sm ${isHigh ? 'bg-orange-500' : 'bg-primary/50'} hover:bg-primary transition-colors cursor-crosshair relative group`}
+                              className={`flex-1 rounded-t-sm ${lat === 0 ? 'bg-primary/20' : (isHigh ? 'bg-orange-500' : 'bg-emerald-500')} hover:opacity-100 transition-colors cursor-crosshair relative group`}
                               style={{ height: `${height}%` }}
                             >
                               <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-popover text-popover-foreground text-[10px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 whitespace-nowrap z-10 pointer-events-none">
-                                {Math.floor(height * 4)}ms
+                                {lat}ms
                               </div>
                             </div>
                           );
