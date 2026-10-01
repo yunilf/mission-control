@@ -120,7 +120,7 @@ export default function AgentsFleetPage() {
                     )}
                     <span className="text-muted-foreground flex items-center gap-1 text-sm ml-2">
                       <ShieldCheck size={14} className="text-blue-500" />
-                      ID: {selectedAgent.id.substring(0, 8)}...
+                      ID: {selectedAgent.id}
                     </span>
                   </div>
                   <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 mt-1 text-sm">
