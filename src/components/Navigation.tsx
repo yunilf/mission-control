@@ -10,6 +10,7 @@ export default function Navigation() {
   const navItems = [
     { name: "Dashboard", href: "/", icon: LayoutDashboard },
     { name: "Fleet (Agentes)", href: "/agents", icon: Bot },
+    { name: "Clientes", href: "/clients", icon: Users },
     { name: "Cola de Tareas", href: "/tasks", icon: Activity },
     { name: "Logs del Sistema", href: "/logs", icon: Terminal },
     { name: "Configuración", href: "/settings", icon: Settings },
