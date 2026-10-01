@@ -58,10 +58,10 @@ export default function AgentsFleetPage() {
         <p className="text-muted-foreground mt-1 text-sm">Monitoreo avanzado, rendimiento de hardware y logs en tiempo real por agente.</p>
       </div>
 
-      <div className="flex flex-1 gap-6 min-h-0 overflow-hidden">
+      <div className="flex flex-col md:flex-row flex-1 gap-4 md:gap-6 min-h-0 overflow-hidden">
         
         {/* Left: Agent List */}
-        <div className="w-1/3 bg-card border border-border rounded-xl shadow-sm flex flex-col overflow-hidden">
+        <div className="w-full md:w-1/3 bg-card h-1/3 md:h-auto shrink-0 md:shrink border border-border rounded-xl shadow-sm flex flex-col overflow-hidden">
           <div className="p-4 border-b border-border bg-secondary/10">
             <h2 className="font-semibold">Nodos Activos</h2>
             <div className="text-xs text-muted-foreground mt-1">Selecciona un agente para ver sus métricas.</div>

@@ -150,7 +150,7 @@ export default function ClientsPage() {
 
       {showAddModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-          <div className="bg-card border border-border w-full max-w-md rounded-xl shadow-lg p-6 animate-in fade-in zoom-in-95 duration-200">
+          <div className="bg-card border border-border w-[95%] md:w-full max-w-md rounded-xl shadow-lg p-6 animate-in fade-in zoom-in-95 duration-200">
             <h3 className="text-xl font-semibold mb-1">Nuevo Cliente</h3>
             <p className="text-sm text-muted-foreground mb-6">Registra un cliente en Mission Control.</p>
             

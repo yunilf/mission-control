@@ -214,7 +214,7 @@ export default function Dashboard() {
       {/* Add Agent Modal */}
       {showAddModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-          <div className="bg-card border border-border w-full max-w-md rounded-xl shadow-lg p-6 animate-in fade-in zoom-in-95 duration-200">
+          <div className="bg-card border border-border w-[95%] md:w-full max-w-md rounded-xl shadow-lg p-6 animate-in fade-in zoom-in-95 duration-200">
             <h3 className="text-xl font-semibold mb-1">Agregar Nuevo Agente</h3>
             <p className="text-sm text-muted-foreground mb-6">Ingresa los detalles básicos para registrar el agente.</p>
             
@@ -241,14 +241,14 @@ export default function Dashboard() {
       {/* Edit Agent Modal */}
       {editingAgent && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-          <div className="bg-card border border-border w-full max-w-3xl rounded-xl shadow-lg flex flex-col overflow-hidden max-h-[85vh] animate-in fade-in zoom-in-95 duration-200">
+          <div className="bg-card border border-border w-[95%] md:w-full max-w-3xl rounded-xl shadow-lg flex flex-col overflow-hidden max-h-[85vh] animate-in fade-in zoom-in-95 duration-200">
             
             <div className="px-6 py-4 border-b border-border flex items-center justify-between">
               <h3 className="text-xl font-semibold flex items-center gap-2"><Settings2 size={20} className="text-primary" /> Configurar Agente: {editingAgent.name}</h3>
             </div>
             
-            <div className="flex flex-1 overflow-hidden">
-              <div className="w-48 border-r border-border bg-secondary/10 p-3 flex flex-col gap-1">
+            <div className="flex flex-col md:flex-row flex-1 overflow-hidden">
+              <div className="w-full md:w-48 border-b md:border-b-0 md:border-r border-border bg-secondary/10 p-3 flex flex-row md:flex-col overflow-x-auto gap-1 shrink-0">
                 <button onClick={() => setActiveTab("general")} className={`px-3 py-2 text-sm text-left rounded-md transition-colors font-medium ${activeTab === 'general' ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:bg-secondary/50'}`}>General</button>
                 <button onClick={() => setActiveTab("instrucciones")} className={`px-3 py-2 text-sm text-left rounded-md transition-colors font-medium ${activeTab === 'instrucciones' ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:bg-secondary/50'}`}>Instrucciones</button>
                 <button onClick={() => setActiveTab("canales")} className={`px-3 py-2 text-sm text-left rounded-md transition-colors font-medium ${activeTab === 'canales' ? 'bg-primary/10 text-primary' : 'text-muted-foreground hover:bg-secondary/50'}`}>Canales</button>

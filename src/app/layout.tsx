@@ -20,19 +20,19 @@ export default function RootLayout({
     <html lang="en" className="dark">
       <body className={`${inter.className} bg-background text-foreground antialiased`}>
         <Navigation />
-        <div className="pl-64 flex flex-col min-h-screen">
-          <header className="h-16 border-b border-border bg-background/95 backdrop-blur sticky top-0 z-40 flex items-center justify-between px-8">
-            <div className="flex items-center gap-4 w-96">
+        <div className="md:pl-64 flex flex-col min-h-screen pb-16 md:pb-0">
+          <header className="h-16 border-b border-border bg-background/95 backdrop-blur sticky top-0 z-40 flex items-center justify-between px-4 md:px-8">
+            <div className="flex items-center gap-4 w-full md:w-96">
               <div className="relative w-full">
                 <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                 <input
                   type="text"
-                  placeholder="Buscar en Mission Control..."
+                  placeholder="Buscar..."
                   className="w-full bg-secondary/50 border border-border rounded-md pl-9 pr-4 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary focus:bg-secondary transition-colors"
                 />
               </div>
             </div>
-            <div className="flex items-center gap-4">
+            <div className="hidden md:flex items-center gap-4">
               <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-500 text-xs font-medium border border-emerald-500/20">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
                 Sistemas Operativos
@@ -43,7 +43,7 @@ export default function RootLayout({
               </button>
             </div>
           </header>
-          <main className="flex-1 p-8">
+          <main className="flex-1 p-4 md:p-8">
             {children}
           </main>
         </div>
