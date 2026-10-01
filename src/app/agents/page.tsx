@@ -151,6 +151,9 @@ export default function AgentsFleetPage() {
               <button onClick={() => setActiveTab('monitor')} className={`py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${activeTab === 'monitor' ? 'border-primary text-foreground' : 'border-transparent text-muted-foreground hover:text-foreground'}`}>
                 Monitor de Rendimiento
               </button>
+              <button onClick={() => setActiveTab('mission')} className={`py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${activeTab === 'mission' ? 'border-primary text-foreground' : 'border-transparent text-muted-foreground hover:text-foreground'}`}>
+                Mission
+              </button>
               <button onClick={() => setActiveTab('terminal')} className={`py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${activeTab === 'terminal' ? 'border-primary text-foreground' : 'border-transparent text-muted-foreground hover:text-foreground'}`}>
                 Terminal en vivo
               </button>
@@ -355,18 +358,32 @@ export default function AgentsFleetPage() {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                      <h4 className="text-sm font-semibold mb-2">Previsualización de Identity</h4>
-                      <div className="bg-secondary/10 border border-border rounded-lg p-4 h-48 overflow-y-auto text-xs text-muted-foreground font-mono whitespace-pre-wrap">
-                        {selectedAgent.identity || "No hay instrucciones de identidad configuradas."}
-                      </div>
+                  
+                </div>
+              )}
+
+              {activeTab === 'mission' && (
+                <div className="h-full flex flex-col md:flex-row gap-6">
+                  <div className="flex-1 flex flex-col bg-card border border-border rounded-lg overflow-hidden">
+                    <div className="p-4 border-b border-border bg-secondary/30 flex justify-between items-center">
+                      <h4 className="text-sm font-semibold">IDENTITY.md</h4>
+                      <button onClick={() => window.dispatchEvent(new CustomEvent('open-edit-agent', {detail: selectedAgent}))} className="text-xs text-primary hover:underline flex items-center gap-1">
+                        <Settings2 size={12}/> Editar
+                      </button>
                     </div>
-                    <div>
-                      <h4 className="text-sm font-semibold mb-2">Previsualización de Soul</h4>
-                      <div className="bg-secondary/10 border border-border rounded-lg p-4 h-48 overflow-y-auto text-xs text-muted-foreground font-mono whitespace-pre-wrap">
-                        {selectedAgent.soul || "No hay instrucciones de soul configuradas."}
-                      </div>
+                    <div className="flex-1 p-5 overflow-y-auto text-sm text-muted-foreground font-mono whitespace-pre-wrap leading-relaxed min-h-[300px]">
+                      {selectedAgent.identity || "No hay instrucciones de identidad configuradas."}
+                    </div>
+                  </div>
+                  <div className="flex-1 flex flex-col bg-card border border-border rounded-lg overflow-hidden">
+                    <div className="p-4 border-b border-border bg-secondary/30 flex justify-between items-center">
+                      <h4 className="text-sm font-semibold">SOUL.md</h4>
+                      <button onClick={() => window.dispatchEvent(new CustomEvent('open-edit-agent', {detail: selectedAgent}))} className="text-xs text-primary hover:underline flex items-center gap-1">
+                        <Settings2 size={12}/> Editar
+                      </button>
+                    </div>
+                    <div className="flex-1 p-5 overflow-y-auto text-sm text-muted-foreground font-mono whitespace-pre-wrap leading-relaxed min-h-[300px]">
+                      {selectedAgent.soul || "No hay instrucciones de soul configuradas."}
                     </div>
                   </div>
                 </div>
