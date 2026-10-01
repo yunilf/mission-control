@@ -146,19 +146,19 @@ export default function AgentsFleetPage() {
                   {/* Stats Grid */}
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="bg-card border border-border rounded-lg p-4">
-                      <div className="text-xs text-muted-foreground mb-1 flex items-center justify-between">Uso de CPU <Cpu size={14}/></div>
-                      <div className="text-2xl font-bold font-mono text-primary">{(Math.random() * 5 + 1).toFixed(1)}%</div>
-                      <div className="text-[10px] text-muted-foreground mt-2">Carga estable en WSL2</div>
+                      <div className="text-xs text-muted-foreground mb-1 flex items-center justify-between">Uso de CPU (Real) <Cpu size={14}/></div>
+                      <div className="text-2xl font-bold font-mono text-primary">{selectedAgent.cpuUsage !== undefined ? selectedAgent.cpuUsage : 0}%</div>
+                      <div className="text-[10px] text-muted-foreground mt-2">Carga actual en WSL</div>
                     </div>
                     <div className="bg-card border border-border rounded-lg p-4">
-                      <div className="text-xs text-muted-foreground mb-1 flex items-center justify-between">VRAM Local <MemoryStick size={14}/></div>
-                      <div className="text-2xl font-bold font-mono text-blue-500">12.4 GB</div>
-                      <div className="text-[10px] text-muted-foreground mt-2">de 24 GB disponibles (RTX 4090)</div>
+                      <div className="text-xs text-muted-foreground mb-1 flex items-center justify-between">RAM / VRAM Local <MemoryStick size={14}/></div>
+                      <div className="text-2xl font-bold font-mono text-blue-500">{selectedAgent.ramUsage || "0 GB"}</div>
+                      <div className="text-[10px] text-muted-foreground mt-2">VRAM: {selectedAgent.vramUsage || "No detectada"}</div>
                     </div>
                     <div className="bg-card border border-border rounded-lg p-4">
                       <div className="text-xs text-muted-foreground mb-1 flex items-center justify-between">Uptime <Clock size={14}/></div>
-                      <div className="text-2xl font-bold font-mono text-emerald-500">14h 22m</div>
-                      <div className="text-[10px] text-muted-foreground mt-2">Desde el último reinicio del proceso</div>
+                      <div className="text-2xl font-bold font-mono text-emerald-500">{selectedAgent.uptime || "0d 0h 0m"}</div>
+                      <div className="text-[10px] text-muted-foreground mt-2">Tiempo activo del servidor WSL</div>
                     </div>
                   </div>
 
