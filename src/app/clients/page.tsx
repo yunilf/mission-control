@@ -293,7 +293,7 @@ export default function ClientsPage() {
                         <label className="text-sm font-medium">Página Web</label>
                         <div className="relative">
                           <Globe className="absolute left-3 top-2.5 text-muted-foreground" size={16} />
-                          <input type="url" value={newClientWebsite} onChange={e => setNewClientWebsite(e.target.value)} placeholder="https://..." className="w-full bg-background border border-border rounded-lg pl-10 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 transition-shadow" />
+                          <input type="text" value={newClientWebsite} onChange={e => setNewClientWebsite(e.target.value)} placeholder="www.ejemplo.com" className="w-full bg-background border border-border rounded-lg pl-10 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 transition-shadow" />
                         </div>
                       </div>
                       <div className="space-y-1.5">
