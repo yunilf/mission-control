@@ -432,7 +432,7 @@ export default function AgentsFleetPage() {
                   <div className="flex-1 flex flex-col bg-card border border-border rounded-lg overflow-hidden">
                     <div className="p-4 border-b border-border bg-secondary/30 flex justify-between items-center">
                       <h4 className="text-sm font-semibold">IDENTITY.md</h4>
-                      <button onClick={() => window.dispatchEvent(new CustomEvent('open-edit-agent', { detail: { agent: selectedAgent, tab: 'general' } }))} className="text-xs text-primary hover:underline flex items-center gap-1" title="Editar Identity">
+                      <button onClick={() => window.dispatchEvent(new CustomEvent('open-edit-agent', { detail: { agent: selectedAgent, tab: 'identidad' } }))} className="text-xs text-primary hover:underline flex items-center gap-1" title="Editar Identity">
                             <Settings2 size={12}/> Editar
                           </button>
                     </div>
@@ -443,7 +443,7 @@ export default function AgentsFleetPage() {
                   <div className="flex-1 flex flex-col bg-card border border-border rounded-lg overflow-hidden">
                     <div className="p-4 border-b border-border bg-secondary/30 flex justify-between items-center">
                       <h4 className="text-sm font-semibold">SOUL.md</h4>
-                      <button onClick={() => window.dispatchEvent(new CustomEvent('open-edit-agent', { detail: { agent: selectedAgent, tab: 'general' } }))} className="text-xs text-primary hover:underline flex items-center gap-1" title="Editar Soul">
+                      <button onClick={() => window.dispatchEvent(new CustomEvent('open-edit-agent', { detail: { agent: selectedAgent, tab: 'soul' } }))} className="text-xs text-primary hover:underline flex items-center gap-1" title="Editar Soul">
                             <Settings2 size={12}/> Editar
                           </button>
                     </div>
