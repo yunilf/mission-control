@@ -1,17 +1,9 @@
-"use client";
-
-import { useState, useEffect } from "react";
-import { collection, onSnapshot, doc, updateDoc, addDoc, deleteDoc } from "firebase/firestore";
-import { db } from "@/lib/firebase";
-import { Users, Bot, Settings2, Plus, Phone, Mail, Building2, Search, Trash2, User, Tag, Añade clientes para comenzar a asignarles agentes.</p>
-            <button onClick={() => setShowAddModal(true)} className="px-4 py-2 bg-primary text-primary-foreground rounded-md font-medium text-sm">
-              Agregar Primer Cliente
-            </button>
-          </div>
-        )}
-      </div>
-
-      {showAddModal && (
+const fs = require('fs');
+let content = fs.readFileSync('src/app/clients/page.tsx', 'utf-8');
+const searchStart = '{showAddModal && (';
+const idxStart = content.indexOf(searchStart);
+if (idxStart !== -1) {
+  content = content.substring(0, idxStart) + `{showAddModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
           <div className="bg-card border border-border w-full max-w-3xl rounded-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
             <div className="flex items-center justify-between p-6 border-b border-border bg-secondary/20">
@@ -145,4 +137,7 @@ import { Users, Bot, Settings2, Plus, Phone, Mail, Building2, Search, Trash2, Us
       )}
     </div>
   );
+}`;
+  fs.writeFileSync('src/app/clients/page.tsx', content);
+  console.log('done');
 }
