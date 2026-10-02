@@ -3,9 +3,75 @@
 import { useState, useEffect } from "react";
 import { collection, addDoc, updateDoc, doc, onSnapshot } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-import { Settings2, MessageSquare, Bot, FileText, Blocks } from "lucide-react";
+import { Settings2, MessageSquare, Bot, FileText, Blocks, X } from "lucide-react";
 
 export default function AgentModals() {
+  
+  const ROLE_OPTIONS = ["Asistente de Ventas", "Soporte Técnico", "Recepcionista", "Asesor Financiero"];
+  const TONE_OPTIONS = ["Profesional y formal", "Amigable y cercano", "Entusiasta y persuasivo", "Directo y conciso"];
+  const AUDIENCE_OPTIONS = ["Público General", "Jóvenes y Adolescentes", "Profesionales / B2B", "Personas Mayores"];
+  const GREETING_OPTIONS = ["¡Hola! ¿En qué te puedo ayudar hoy?", "Bienvenido, soy tu asistente virtual.", "¡Qué tal! Cuéntame qué necesitas."];
+
+  const renderIdentityField = (fieldKey: string, label: string, desc: string, options: string[], placeholder: string) => {
+    const currentValue = editingAgent.identityData?.[fieldKey] || "";
+    const isCustom = customIdentityFields[fieldKey as keyof typeof customIdentityFields] || (currentValue !== "" && !options.includes(currentValue));
+
+    return (
+      <div>
+        <label className="text-sm font-medium">{label}</label>
+        <p className="text-xs text-muted-foreground mb-2">{desc}</p>
+        
+        {!isCustom ? (
+          <select 
+            value={currentValue}
+            onChange={e => {
+              const val = e.target.value;
+              if (val === "CUSTOM") {
+                setCustomIdentityFields(prev => ({...prev, [fieldKey]: true}));
+                const newData = { ...(editingAgent.identityData || {}), [fieldKey]: "" };
+                setEditingAgent({...editingAgent, identityData: newData, identity: generateIdentity(newData)});
+              } else {
+                const newData = { ...(editingAgent.identityData || {}), [fieldKey]: val };
+                setEditingAgent({...editingAgent, identityData: newData, identity: generateIdentity(newData)});
+              }
+            }}
+            className="w-full bg-background border border-border rounded-md px-3 py-2 text-sm focus:outline-none focus:border-primary"
+          >
+            <option value="">-- Selecciona una opción --</option>
+            {options.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+            <option value="CUSTOM">Escribir algo personalizado...</option>
+          </select>
+        ) : (
+          <div className="flex items-center gap-2">
+            <input 
+              type="text" 
+              value={currentValue} 
+              onChange={e => {
+                 const newData = { ...(editingAgent.identityData || {}), [fieldKey]: e.target.value };
+                 setEditingAgent({...editingAgent, identityData: newData, identity: generateIdentity(newData)});
+              }} 
+              placeholder={placeholder} 
+              className="w-full bg-background border border-border rounded-md px-3 py-2 text-sm focus:outline-none focus:border-primary" 
+              autoFocus
+            />
+            <button 
+              type="button"
+              onClick={() => {
+                setCustomIdentityFields(prev => ({...prev, [fieldKey]: false}));
+                const newData = { ...(editingAgent.identityData || {}), [fieldKey]: "" };
+                setEditingAgent({...editingAgent, identityData: newData, identity: generateIdentity(newData)});
+              }}
+              className="p-2 text-muted-foreground hover:text-foreground hover:bg-secondary rounded-md"
+              title="Volver a opciones"
+            >
+              <X size={16} />
+            </button>
+          </div>
+        )}
+      </div>
+    );
+  };
+
   const generateIdentity = (data: any) => {
     let md = `# IDENTIDAD DEL AGENTE\n\n`;
     if (data.role) md += `## 1. ROL Y PROPÓSITO\n${data.role}\n\n`;
@@ -20,6 +86,7 @@ export default function AgentModals() {
   const [editingAgent, setEditingAgent] = useState<any>(null);
   const [activeTab, setActiveTab] = useState("general");
   const [pairingCode, setPairingCode] = useState("");
+  const [customIdentityFields, setCustomIdentityFields] = useState({ role: false, tone: false, audience: false, greeting: false });
   
   const [newAgentName, setNewAgentName] = useState("");
   const [newAgentRole, setNewAgentRole] = useState("");
@@ -200,65 +267,13 @@ export default function AgentModals() {
                       </div>
                       
                       <div className="space-y-4">
-                        <div>
-                          <label className="text-sm font-medium">1. ¿Cuál es el rol o profesión del agente?</label>
-                          <p className="text-xs text-muted-foreground mb-2">Ej. Asesor de ventas experto en moda, Soporte técnico nivel 2, Recepcionista de clínica.</p>
-                          <input 
-                            type="text" 
-                            value={editingAgent.identityData?.role || ""} 
-                            onChange={e => {
-                               const newData = { ...(editingAgent.identityData || {}), role: e.target.value };
-                               setEditingAgent({...editingAgent, identityData: newData, identity: generateIdentity(newData)});
-                            }} 
-                            placeholder="Ej. Experto en cierre de ventas inmobiliarias" 
-                            className="w-full bg-background border border-border rounded-md px-3 py-2 text-sm focus:outline-none focus:border-primary" 
-                          />
-                        </div>
+                        {renderIdentityField('role', '1. ¿Cuál es el rol o profesión del agente?', 'Ej. Asesor de ventas experto en moda, Soporte técnico nivel 2, Recepcionista de clínica.', ROLE_OPTIONS, 'Ej. Experto en cierre de ventas inmobiliarias')}
 
-                        <div>
-                          <label className="text-sm font-medium">2. ¿Qué tono de voz debe utilizar?</label>
-                          <p className="text-xs text-muted-foreground mb-2">Ej. Amable y cercano, Profesional y directo, Entusiasta usando emojis.</p>
-                          <input 
-                            type="text" 
-                            value={editingAgent.identityData?.tone || ""} 
-                            onChange={e => {
-                               const newData = { ...(editingAgent.identityData || {}), tone: e.target.value };
-                               setEditingAgent({...editingAgent, identityData: newData, identity: generateIdentity(newData)});
-                            }} 
-                            placeholder="Ej. Formal, respetuoso pero muy empático" 
-                            className="w-full bg-background border border-border rounded-md px-3 py-2 text-sm focus:outline-none focus:border-primary" 
-                          />
-                        </div>
+                        {renderIdentityField('tone', '2. ¿Qué tono de voz debe utilizar?', 'Ej. Amable y cercano, Profesional y directo, Entusiasta usando emojis.', TONE_OPTIONS, 'Ej. Formal, respetuoso pero muy empático')}
 
-                        <div>
-                          <label className="text-sm font-medium">3. ¿A quién le está hablando? (Perfil de la audiencia)</label>
-                          <p className="text-xs text-muted-foreground mb-2">Ej. Madres jóvenes, Emprendedores de tecnología, Personas mayores.</p>
-                          <input 
-                            type="text" 
-                            value={editingAgent.identityData?.audience || ""} 
-                            onChange={e => {
-                               const newData = { ...(editingAgent.identityData || {}), audience: e.target.value };
-                               setEditingAgent({...editingAgent, identityData: newData, identity: generateIdentity(newData)});
-                            }} 
-                            placeholder="Ej. Dueños de pequeños negocios locales" 
-                            className="w-full bg-background border border-border rounded-md px-3 py-2 text-sm focus:outline-none focus:border-primary" 
-                          />
-                        </div>
+                        {renderIdentityField('audience', '3. ¿A quién le está hablando? (Perfil de la audiencia)', 'Ej. Madres jóvenes, Emprendedores de tecnología, Personas mayores.', AUDIENCE_OPTIONS, 'Ej. Dueños de pequeños negocios locales')}
 
-                        <div>
-                          <label className="text-sm font-medium">4. Ejemplo de Saludo Típico</label>
-                          <p className="text-xs text-muted-foreground mb-2">Una frase que muestre cómo iniciaría una conversación este agente.</p>
-                          <input 
-                            type="text" 
-                            value={editingAgent.identityData?.greeting || ""} 
-                            onChange={e => {
-                               const newData = { ...(editingAgent.identityData || {}), greeting: e.target.value };
-                               setEditingAgent({...editingAgent, identityData: newData, identity: generateIdentity(newData)});
-                            }} 
-                            placeholder="Ej. ¡Hola! Qué alegría saludarte, ¿en qué te puedo ayudar hoy? 😊" 
-                            className="w-full bg-background border border-border rounded-md px-3 py-2 text-sm focus:outline-none focus:border-primary" 
-                          />
-                        </div>
+                        {renderIdentityField('greeting', '4. Ejemplo de Saludo Típico', 'Una frase que muestre cómo iniciaría una conversación este agente.', GREETING_OPTIONS, 'Ej. ¡Hola! Qué alegría saludarte, ¿en qué te puedo ayudar hoy? 😊')}
 
                         <div>
                           <label className="text-sm font-medium">5. Reglas estrictas de Personalidad</label>
