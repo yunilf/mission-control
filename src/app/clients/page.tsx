@@ -196,7 +196,7 @@ export default function ClientsPage() {
                 <div className="space-y-6">
                   <div>
                     <h4 className="text-sm font-bold text-muted-foreground uppercase tracking-wider mb-4 flex items-center gap-2">
-                      <User size={16}/> Datos Principales
+                      <User size={16}/> Contacto
                     </h4>
                     <div className="space-y-4">
                       <div className="space-y-1.5">
@@ -204,13 +204,6 @@ export default function ClientsPage() {
                         <div className="relative">
                           <User className="absolute left-3 top-2.5 text-muted-foreground" size={16} />
                           <input type="text" value={newClientName} onChange={e => setNewClientName(e.target.value)} placeholder="Ej. Juan Pérez" className="w-full bg-background border border-border rounded-lg pl-10 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 transition-shadow" required />
-                        </div>
-                      </div>
-                      <div className="space-y-1.5">
-                        <label className="text-sm font-medium">Nombre Negocio</label>
-                        <div className="relative">
-                          <Building2 className="absolute left-3 top-2.5 text-muted-foreground" size={16} />
-                          <input type="text" value={newClientCompany} onChange={e => setNewClientCompany(e.target.value)} placeholder="Ej. La Barrita Express" className="w-full bg-background border border-border rounded-lg pl-10 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 transition-shadow" />
                         </div>
                       </div>
                       <div className="space-y-1.5">
@@ -225,21 +218,21 @@ export default function ClientsPage() {
 
                   <div>
                     <h4 className="text-sm font-bold text-muted-foreground uppercase tracking-wider mb-4 flex items-center gap-2">
-                      <Phone size={16}/> Contacto de la Empresa
+                      <Building2 size={16}/> Datos Negocio
                     </h4>
                     <div className="grid grid-cols-2 gap-4">
+                      <div className="col-span-2 space-y-1.5">
+                        <label className="text-sm font-medium">Nombre Negocio</label>
+                        <div className="relative">
+                          <Building2 className="absolute left-3 top-2.5 text-muted-foreground" size={16} />
+                          <input type="text" value={newClientCompany} onChange={e => setNewClientCompany(e.target.value)} placeholder="Ej. La Barrita Express" className="w-full bg-background border border-border rounded-lg pl-10 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 transition-shadow" />
+                        </div>
+                      </div>
                       <div className="space-y-1.5">
                         <label className="text-sm font-medium">Teléfono del Negocio</label>
                         <div className="relative">
                           <Phone className="absolute left-3 top-2.5 text-muted-foreground" size={16} />
                           <input type="text" value={newClientPhone} onChange={e => setNewClientPhone(e.target.value)} placeholder="+1 829..." className="w-full bg-background border border-border rounded-lg pl-10 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 transition-shadow" />
-                        </div>
-                      </div>
-                      <div className="space-y-1.5">
-                        <label className="text-sm font-medium text-emerald-500">WhatsApp del Agente IA</label>
-                        <div className="relative">
-                          <Bot className="absolute left-3 top-2.5 text-emerald-500" size={16} />
-                          <input type="text" value={newClientAgentPhone} onChange={e => setNewClientAgentPhone(e.target.value)} placeholder="+1 829... (Exclusivo IA)" className="w-full bg-background border border-border rounded-lg pl-10 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 transition-shadow" />
                         </div>
                       </div>
                       <div className="space-y-1.5">
@@ -274,6 +267,13 @@ export default function ClientsPage() {
                       <FileText size={16}/> Perfil Operativo (Para el Agente)
                     </h4>
                     <div className="space-y-4">
+                      <div className="space-y-1.5">
+                        <label className="text-sm font-medium text-emerald-500">WhatsApp del Agente IA</label>
+                        <div className="relative">
+                          <Bot className="absolute left-3 top-2.5 text-emerald-500" size={16} />
+                          <input type="text" value={newClientAgentPhone} onChange={e => setNewClientAgentPhone(e.target.value)} placeholder="+1 829... (Exclusivo IA)" className="w-full bg-background border border-border rounded-lg pl-10 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 transition-shadow" />
+                        </div>
+                      </div>
                       <div className="space-y-1.5">
                         <label className="text-sm font-medium">Dirección Física o Enlace a Maps</label>
                         <div className="relative">
