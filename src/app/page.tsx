@@ -1,9 +1,10 @@
 "use client";
 
-import { Activity, Bot, Cpu, Plus, Settings2, Play, Square, ActivitySquare, Server, MessageSquare, AlertCircle, FileText, Blocks } from "lucide-react";
+import { Activity, Bot, Cpu, Plus, Settings2, Play, Square, ActivitySquare, Server, MessageSquare, AlertCircle, FileText, Blocks, Building2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { collection, onSnapshot, doc, updateDoc, addDoc, deleteDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
+import Link from "next/link";
 
 export default function Dashboard() {
   const [agents, setAgents] = useState<any[]>([]);
@@ -125,6 +126,9 @@ export default function Dashboard() {
           <p className="text-muted-foreground mt-1 text-sm">Resumen de operaciones y estado del enjambre (Swarm Status).</p>
         </div>
         <div className="flex gap-3">
+          <Link href="/clients" className="flex items-center gap-2 px-4 py-2 bg-secondary text-secondary-foreground border border-border rounded-md font-medium text-sm hover:bg-secondary/80 transition-colors shadow-sm">
+            <Building2 size={18} /> Agregar Cliente
+          </Link>
           <button onClick={() => window.dispatchEvent(new CustomEvent('open-add-agent'))} className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-md font-medium text-sm hover:opacity-90 transition-opacity shadow-sm">
             <Plus size={18} /> Agregar Agente
           </button>
