@@ -10,6 +10,7 @@ export default function ClientsPage() {
   const [agents, setAgents] = useState<any[]>([]);
   
   const [showAddModal, setShowAddModal] = useState(false);
+  const [editingClient, setEditingClient] = useState<any | null>(null);
   const [newClientName, setNewClientName] = useState("");
   const [newClientCompany, setNewClientCompany] = useState("");
   const [newClientPhone, setNewClientPhone] = useState("");
@@ -40,12 +41,51 @@ export default function ClientsPage() {
     return () => { unsubClients(); unsubAgents(); };
   }, []);
 
+  
+  const handleEditClick = (client: any) => {
+    setEditingClient(client);
+    setNewClientName(client.name || "");
+    setNewClientCompany(client.company || "");
+    setNewClientPhone(client.phone || "");
+    setNewClientContactPhone(client.contactPhone || "");
+    setNewClientAgentPhone(client.agentPhone || "");
+    setNewClientEmail(client.email || "");
+    setNewClientWebsite(client.website || "");
+    setNewClientInstagram(client.instagram || "");
+    setNewClientAddress(client.address || "");
+    setNewClientHours(client.hours || "");
+    setNewClientBusinessInfo(client.businessInfo || "");
+    setNewClientStatus(client.status || "active");
+    setNewClientTier(client.tier || "Pro");
+    setNewClientNotes(client.notes || "");
+    setShowAddModal(true);
+  };
+
   const handleAddClient = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newClientName.trim()) return;
     setIsSubmitting(true);
     try {
-      await addDoc(collection(db, "clients"), {
+      if (editingClient) {
+        await updateDoc(doc(db, "clients", editingClient.id), {
+          name: newClientName,
+          company: newClientCompany,
+          phone: newClientPhone,
+          contactPhone: newClientContactPhone,
+          agentPhone: newClientAgentPhone,
+          email: newClientEmail,
+          website: newClientWebsite,
+          instagram: newClientInstagram,
+          address: newClientAddress,
+          hours: newClientHours,
+          businessInfo: newClientBusinessInfo,
+          status: newClientStatus,
+          tier: newClientTier,
+          notes: newClientNotes
+        });
+      } else {
+        await addDoc(collection(db, "clients"), {
+
         name: newClientName,
         company: newClientCompany,
         phone: newClientPhone,
@@ -61,7 +101,9 @@ export default function ClientsPage() {
         tier: newClientTier,
         notes: newClientNotes,
         createdAt: new Date().toISOString()
-      });
+      
+        });
+      }
       setNewClientName(""); setNewClientCompany(""); setNewClientPhone(""); setNewClientContactPhone(""); setNewClientAgentPhone(""); setNewClientEmail("");
       setNewClientWebsite(""); setNewClientInstagram(""); setNewClientAddress(""); setNewClientHours(""); setNewClientBusinessInfo("");
       setNewClientStatus("active"); setNewClientTier("Pro"); setNewClientNotes("");
@@ -111,9 +153,14 @@ export default function ClientsPage() {
                       <p className="text-sm text-muted-foreground">{client.company || "Sin empresa"}</p>
                     </div>
                   </div>
-                  <button onClick={() => handleDeleteClient(client.id)} className="p-2 text-muted-foreground hover:text-red-500 hover:bg-red-500/10 rounded-md transition-colors opacity-0 group-hover:opacity-100">
-                    <Trash2 size={16} />
-                  </button>
+                  <div className="flex items-center opacity-0 group-hover:opacity-100 transition-opacity">
+                      <button onClick={() => handleEditClick(client)} className="p-2 text-muted-foreground hover:text-primary hover:bg-primary/10 rounded-md transition-colors" title="Editar cliente">
+                        <Settings2 size={16} />
+                      </button>
+                      <button onClick={() => handleDeleteClient(client.id)} className="p-2 text-muted-foreground hover:text-red-500 hover:bg-red-500/10 rounded-md transition-colors" title="Eliminar cliente">
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
                 </div>
                 
                 <div className="mt-4 flex flex-col gap-1">
