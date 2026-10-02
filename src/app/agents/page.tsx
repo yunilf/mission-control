@@ -3,10 +3,11 @@
 import { useState, useEffect } from "react";
 import { collection, onSnapshot, doc, updateDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-import { Bot, Activity, Terminal, Cpu, MemoryStick, Play, Square, Settings2, ShieldCheck, Clock, Plus, Power, Sparkles, X } from "lucide-react";
+import { Bot, Activity, Terminal, Cpu, MemoryStick, Play, Square, Settings2, ShieldCheck, Clock, Plus, Power, Sparkles, X, User } from "lucide-react";
 
 export default function AgentsFleetPage() {
   const [agents, setAgents] = useState<any[]>([]);
+  const [clients, setClients] = useState<any[]>([]);
   const [selectedAgentId, setSelectedAgentId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState("monitor");
   const [showSubagentModal, setShowSubagentModal] = useState(false);
@@ -22,14 +23,17 @@ export default function AgentsFleetPage() {
   ]);
 
   useEffect(() => {
-    const unsub = onSnapshot(collection(db, "agents"), (snapshot) => {
+    const unsubAgents = onSnapshot(collection(db, "agents"), (snapshot) => {
       const agentsList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       setAgents(agentsList);
       if (agentsList.length > 0 && !selectedAgentId) {
         setSelectedAgentId(agentsList[0].id);
       }
     });
-    return () => unsub();
+    const unsubClients = onSnapshot(collection(db, "clients"), (snapshot) => {
+      setClients(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+    });
+    return () => { unsubAgents(); unsubClients(); };
   }, [selectedAgentId]);
 
   // Simular logs entrando en tiempo real
@@ -150,8 +154,8 @@ export default function AgentsFleetPage() {
                 <div className={`w-14 h-14 rounded-xl flex items-center justify-center border ${selectedAgent.status === 'online' ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-500' : 'bg-zinc-500/10 border-zinc-500/30 text-zinc-500'}`}>
                   <Bot size={32} />
                 </div>
-                <div>
-                  <div className="flex flex-wrap items-center gap-3">
+                <div className="flex flex-col gap-2 w-full">
+                  <div className="flex items-center gap-3">
                     <h2 className="text-2xl font-bold">{selectedAgent.name}</h2>
                     {selectedAgent.status === 'online' ? (
                       <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 text-xs font-semibold uppercase tracking-wider flex items-center gap-1">
@@ -162,18 +166,35 @@ export default function AgentsFleetPage() {
                         <span className="w-1.5 h-1.5 rounded-full bg-zinc-500"></span> Inactivo
                       </span>
                     )}
-                    <span className="text-muted-foreground flex items-center gap-1 text-sm ml-2">
-                      <ShieldCheck size={14} className="text-blue-500" />
-                      ID: {selectedAgent.id}
-                    </span>
                   </div>
-                  <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 mt-1 text-sm">
-                    <span className="text-muted-foreground">{selectedAgent.role}</span>
-                    <span className="hidden sm:block text-muted-foreground border-l border-border h-4"></span>
-                    <span className="text-muted-foreground flex items-center gap-1">
-                      <Sparkles size={14} className="text-purple-500" />
-                      Modelo: {selectedAgent.aiModel || "google/gemini-2.5-flash"}
-                    </span>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-2 mt-1 w-full max-w-2xl border border-border bg-secondary/10 rounded-lg p-3">
+                    {/* Left Column */}
+                    <div className="flex flex-col gap-2">
+                      <span className="text-muted-foreground flex items-center gap-2 text-sm">
+                        <ShieldCheck size={14} className="text-blue-500" />
+                        ID: <span className="text-foreground">{selectedAgent.id}</span>
+                      </span>
+                      <span className="text-muted-foreground flex items-center gap-2 text-sm">
+                        <Sparkles size={14} className="text-purple-500" />
+                        Modelo: <span className="text-foreground">{selectedAgent.aiModel || "google/gemini-2.5-flash"}</span>
+                      </span>
+                    </div>
+                    
+                    {/* Right Column */}
+                    <div className="flex flex-col gap-2">
+                      <span className="text-muted-foreground flex items-center gap-2 text-sm">
+                        <User size={14} className="text-primary" />
+                        Cliente asignado: {clients.find(c => c.id === selectedAgent.clientId)?.name || <span className="italic opacity-50">Ninguno</span>}
+                      </span>
+                      <button 
+                        onClick={() => window.dispatchEvent(new CustomEvent('open-edit-agent', { detail: { agent: selectedAgent, tab: 'general' } }))}
+                        className="text-primary hover:underline flex items-center gap-2 text-sm transition-colors w-fit"
+                      >
+                        <Settings2 size={14} />
+                        Editar Agente
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
