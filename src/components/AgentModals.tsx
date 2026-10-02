@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { collection, addDoc, updateDoc, doc } from "firebase/firestore";
+import { collection, addDoc, updateDoc, doc, onSnapshot } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { Settings2, MessageSquare, Bot, FileText, Blocks } from "lucide-react";
 
@@ -14,6 +14,7 @@ export default function AgentModals() {
   const [newAgentName, setNewAgentName] = useState("");
   const [newAgentRole, setNewAgentRole] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [clients, setClients] = useState<any[]>([]);
 
   useEffect(() => {
     const handleOpenAdd = () => setShowAddModal(true);
@@ -30,9 +31,15 @@ export default function AgentModals() {
     window.addEventListener("open-add-agent", handleOpenAdd);
     window.addEventListener("open-edit-agent", handleOpenEdit);
 
+    const unsubClients = onSnapshot(collection(db, "clients"), (snapshot) => {
+      setClients(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+    });
+
+
     return () => {
       window.removeEventListener("open-add-agent", handleOpenAdd);
       window.removeEventListener("open-edit-agent", handleOpenEdit);
+      unsubClients();
     };
   }, []);
 
@@ -166,12 +173,11 @@ export default function AgentModals() {
                       <div>
                         <label className="text-sm font-medium">Cliente Asignado</label>
                         <select value={editingAgent.clientId || ""} onChange={e => setEditingAgent({...editingAgent, clientId: e.target.value})} className="w-full bg-background border border-border rounded-md px-3 py-2 text-sm mt-1">
-                          <option value="">-- Sin asignar --</option>
-                          <option value="cliente1_colmadi">Colmadi</option>
-                          <option value="cliente2_barrita">La Barrita</option>
-                          <option value="cliente3_megachica">Megachica</option>
-                          <option value="agencia_interna">Agencia Interna</option>
-                        </select>
+                            <option value="">-- Sin asignar --</option>
+                            {clients.map(client => (
+                              <option key={client.id} value={client.id}>{client.name} {client.company ? `(${client.company})` : ''}</option>
+                            ))}
+                          </select>
                       </div>
                     </div>
                   )}
