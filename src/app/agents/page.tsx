@@ -9,6 +9,11 @@ export default function AgentsFleetPage() {
   const [agents, setAgents] = useState<any[]>([]);
   const [selectedAgentId, setSelectedAgentId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState("monitor");
+  const [showSubagentModal, setShowSubagentModal] = useState(false);
+  const [newSubagentName, setNewSubagentName] = useState('');
+  const [newSubagentMission, setNewSubagentMission] = useState('');
+  const [isSavingSubagent, setIsSavingSubagent] = useState(false);
+
   const [mockLogs, setMockLogs] = useState<string[]>([
     "[10:45:02] INFO: Iniciando subsistema OpenClaw...",
     "[10:45:03] INFO: Conectando a base de datos vectorial...",
