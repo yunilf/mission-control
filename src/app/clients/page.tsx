@@ -229,7 +229,7 @@ export default function ClientsPage() {
                         </div>
                       </div>
                       <div className="space-y-1.5">
-                        <label className="text-sm font-medium">Teléfono del Negocio</label>
+                        <label className="text-sm font-medium">WhatsApp del Negocio</label>
                         <div className="relative">
                           <Phone className="absolute left-3 top-2.5 text-muted-foreground" size={16} />
                           <input type="text" value={newClientPhone} onChange={e => setNewClientPhone(e.target.value)} placeholder="+1 829..." className="w-full bg-background border border-border rounded-lg pl-10 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 transition-shadow" />
