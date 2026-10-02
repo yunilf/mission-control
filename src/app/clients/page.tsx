@@ -13,6 +13,7 @@ export default function ClientsPage() {
   const [newClientName, setNewClientName] = useState("");
   const [newClientCompany, setNewClientCompany] = useState("");
   const [newClientPhone, setNewClientPhone] = useState("");
+  const [newClientContactPhone, setNewClientContactPhone] = useState("");
   const [newClientAgentPhone, setNewClientAgentPhone] = useState("");
   const [newClientEmail, setNewClientEmail] = useState("");
   const [newClientWebsite, setNewClientWebsite] = useState("");
@@ -48,11 +49,22 @@ export default function ClientsPage() {
         name: newClientName,
         company: newClientCompany,
         phone: newClientPhone,
+        contactPhone: newClientContactPhone,
+        agentPhone: newClientAgentPhone,
         email: newClientEmail,
-        createdAt: new Date().toISOString(),
-        status: "active"
+        website: newClientWebsite,
+        instagram: newClientInstagram,
+        address: newClientAddress,
+        hours: newClientHours,
+        businessInfo: newClientBusinessInfo,
+        status: newClientStatus,
+        tier: newClientTier,
+        notes: newClientNotes,
+        createdAt: new Date().toISOString()
       });
-      setNewClientName(""); setNewClientCompany(""); setNewClientPhone(""); setNewClientAgentPhone(""); setNewClientEmail("");
+      setNewClientName(""); setNewClientCompany(""); setNewClientPhone(""); setNewClientContactPhone(""); setNewClientAgentPhone(""); setNewClientEmail("");
+      setNewClientWebsite(""); setNewClientInstagram(""); setNewClientAddress(""); setNewClientHours(""); setNewClientBusinessInfo("");
+      setNewClientStatus("active"); setNewClientTier("Pro"); setNewClientNotes("");
       setShowAddModal(false);
     } catch (error: any) {
       alert("Error: " + error.message);
@@ -115,11 +127,15 @@ export default function ClientsPage() {
               </div>
 
               <div className="p-5 flex-1 flex flex-col">
-                <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">Agentes Asignados ({clientAgents.length})</h4>
+                <div className="flex items-center justify-between mb-3">
+                  <h4 className="text-sm font-semibold flex items-center gap-2">
+                    <Users size={16} className="text-primary" /> Agentes ({(clientAgents || []).length})
+                  </h4>
+                </div>
                 
-                <div className="flex-1 space-y-2">
+                <div className="space-y-2 flex-1">
                   {clientAgents.length === 0 ? (
-                    <div className="text-sm text-muted-foreground italic text-center py-4 bg-secondary/20 rounded-md border border-border border-dashed">
+                    <div className="text-xs text-muted-foreground text-center py-4 bg-secondary/20 rounded-md border border-dashed border-border">
                       Ningún agente asignado
                     </div>
                   ) : (
@@ -184,17 +200,24 @@ export default function ClientsPage() {
                     </h4>
                     <div className="space-y-4">
                       <div className="space-y-1.5">
-                        <label className="text-sm font-medium">Nombre del Responsable <span className="text-red-500">*</span></label>
+                        <label className="text-sm font-medium">Nombre del Contacto <span className="text-red-500">*</span></label>
                         <div className="relative">
                           <User className="absolute left-3 top-2.5 text-muted-foreground" size={16} />
                           <input type="text" value={newClientName} onChange={e => setNewClientName(e.target.value)} placeholder="Ej. Juan Pérez" className="w-full bg-background border border-border rounded-lg pl-10 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 transition-shadow" required />
                         </div>
                       </div>
                       <div className="space-y-1.5">
-                        <label className="text-sm font-medium">Empresa o Marca</label>
+                        <label className="text-sm font-medium">Nombre Negocio</label>
                         <div className="relative">
                           <Building2 className="absolute left-3 top-2.5 text-muted-foreground" size={16} />
                           <input type="text" value={newClientCompany} onChange={e => setNewClientCompany(e.target.value)} placeholder="Ej. La Barrita Express" className="w-full bg-background border border-border rounded-lg pl-10 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 transition-shadow" />
+                        </div>
+                      </div>
+                      <div className="space-y-1.5">
+                        <label className="text-sm font-medium">WhatsApp del Contacto</label>
+                        <div className="relative">
+                          <Phone className="absolute left-3 top-2.5 text-muted-foreground" size={16} />
+                          <input type="text" value={newClientContactPhone} onChange={e => setNewClientContactPhone(e.target.value)} placeholder="+1 809... (Dueño o Encargado)" className="w-full bg-background border border-border rounded-lg pl-10 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 transition-shadow" />
                         </div>
                       </div>
                     </div>
@@ -202,7 +225,7 @@ export default function ClientsPage() {
 
                   <div>
                     <h4 className="text-sm font-bold text-muted-foreground uppercase tracking-wider mb-4 flex items-center gap-2">
-                      <Phone size={16}/> Contacto y Enlaces
+                      <Phone size={16}/> Contacto de la Empresa
                     </h4>
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-1.5">
@@ -216,7 +239,7 @@ export default function ClientsPage() {
                         <label className="text-sm font-medium text-emerald-500">WhatsApp del Agente IA</label>
                         <div className="relative">
                           <Bot className="absolute left-3 top-2.5 text-emerald-500" size={16} />
-                          <input type="text" value={newClientAgentPhone} onChange={e => setNewClientAgentPhone(e.target.value)} placeholder="+1 829... (Línea para la IA)" className="w-full bg-background border border-border rounded-lg pl-10 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 transition-shadow" />
+                          <input type="text" value={newClientAgentPhone} onChange={e => setNewClientAgentPhone(e.target.value)} placeholder="+1 829... (Exclusivo IA)" className="w-full bg-background border border-border rounded-lg pl-10 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 transition-shadow" />
                         </div>
                       </div>
                       <div className="space-y-1.5">
