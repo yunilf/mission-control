@@ -198,6 +198,9 @@ export default function AgentsFleetPage() {
               <button onClick={() => setActiveTab('mission')} className={`py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${activeTab === 'mission' ? 'border-primary text-foreground' : 'border-transparent text-muted-foreground hover:text-foreground'}`}>
                 Mission
               </button>
+              <button onClick={() => setActiveTab('subagents')} className={`py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${activeTab === 'subagents' ? 'border-primary text-foreground' : 'border-transparent text-muted-foreground hover:text-foreground'}`}>
+                Sub-agentes (Equipo)
+              </button>
               <button onClick={() => setActiveTab('config')} className={`py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${activeTab === 'config' ? 'border-primary text-foreground' : 'border-transparent text-muted-foreground hover:text-foreground'}`}>
                 Resumen de Configuración
               </button>
@@ -398,6 +401,39 @@ export default function AgentsFleetPage() {
                     </div>
                   </div>
 
+
+                  
+                </div>
+              )}
+
+              {activeTab === 'mission' && (
+                <div className="h-full flex flex-col md:flex-row gap-6">
+                  <div className="flex-1 flex flex-col bg-card border border-border rounded-lg overflow-hidden">
+                    <div className="p-4 border-b border-border bg-secondary/30 flex justify-between items-center">
+                      <h4 className="text-sm font-semibold">IDENTITY.md</h4>
+                      <a href="/" className="text-xs text-primary hover:underline flex items-center gap-1" title="Editar en Mission Control">
+                          <Settings2 size={12}/> Editar
+                        </a>
+                    </div>
+                    <div className="flex-1 p-5 overflow-y-auto text-sm text-muted-foreground font-mono whitespace-pre-wrap leading-relaxed min-h-[300px]">
+                      {selectedAgent.identity || "No hay instrucciones de identidad configuradas."}
+                    </div>
+                  </div>
+                  <div className="flex-1 flex flex-col bg-card border border-border rounded-lg overflow-hidden">
+                    <div className="p-4 border-b border-border bg-secondary/30 flex justify-between items-center">
+                      <h4 className="text-sm font-semibold">SOUL.md</h4>
+                      <a href="/" className="text-xs text-primary hover:underline flex items-center gap-1" title="Editar en Mission Control">
+                          <Settings2 size={12}/> Editar
+                        </a>
+                    </div>
+                    <div className="flex-1 p-5 overflow-y-auto text-sm text-muted-foreground font-mono whitespace-pre-wrap leading-relaxed min-h-[300px]">
+                      {selectedAgent.soul || "No hay instrucciones de soul configuradas."}
+                    </div>
+                  </div>
+                </div>
+              )}
+              {activeTab === 'subagents' && (
+                <div className="space-y-6">
                   <div className="bg-secondary/20 border border-border rounded-lg p-5">
                     <div className="flex items-center justify-between mb-3">
                       <h4 className="text-sm font-semibold">Sub-agentes (Equipo)</h4>
@@ -435,37 +471,9 @@ export default function AgentsFleetPage() {
                       )}
                     </div>
                   </div>
-
-                  
                 </div>
               )}
 
-              {activeTab === 'mission' && (
-                <div className="h-full flex flex-col md:flex-row gap-6">
-                  <div className="flex-1 flex flex-col bg-card border border-border rounded-lg overflow-hidden">
-                    <div className="p-4 border-b border-border bg-secondary/30 flex justify-between items-center">
-                      <h4 className="text-sm font-semibold">IDENTITY.md</h4>
-                      <a href="/" className="text-xs text-primary hover:underline flex items-center gap-1" title="Editar en Mission Control">
-                          <Settings2 size={12}/> Editar
-                        </a>
-                    </div>
-                    <div className="flex-1 p-5 overflow-y-auto text-sm text-muted-foreground font-mono whitespace-pre-wrap leading-relaxed min-h-[300px]">
-                      {selectedAgent.identity || "No hay instrucciones de identidad configuradas."}
-                    </div>
-                  </div>
-                  <div className="flex-1 flex flex-col bg-card border border-border rounded-lg overflow-hidden">
-                    <div className="p-4 border-b border-border bg-secondary/30 flex justify-between items-center">
-                      <h4 className="text-sm font-semibold">SOUL.md</h4>
-                      <a href="/" className="text-xs text-primary hover:underline flex items-center gap-1" title="Editar en Mission Control">
-                          <Settings2 size={12}/> Editar
-                        </a>
-                    </div>
-                    <div className="flex-1 p-5 overflow-y-auto text-sm text-muted-foreground font-mono whitespace-pre-wrap leading-relaxed min-h-[300px]">
-                      {selectedAgent.soul || "No hay instrucciones de soul configuradas."}
-                    </div>
-                  </div>
-                </div>
-              )}
 
             </div>
           </div>
