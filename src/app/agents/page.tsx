@@ -385,9 +385,9 @@ export default function AgentsFleetPage() {
                   <div className="bg-secondary/20 border border-border rounded-lg p-5">
                     <div className="flex items-center justify-between mb-3">
                       <h4 className="text-sm font-semibold">Integraciones Activas</h4>
-                      <a href="/" className="text-xs text-primary hover:underline flex items-center gap-1" title="Editar en Mission Control">
-                          <Settings2 size={12}/> Editar
-                        </a>
+                      <button onClick={() => window.dispatchEvent(new CustomEvent('open-edit-agent', { detail: { agent: selectedAgent, tab: 'tools' } }))} className="text-xs text-primary hover:underline flex items-center gap-1" title="Editar Integraciones">
+                            <Settings2 size={12}/> Editar
+                          </button>
                     </div>
                     <div className="flex flex-wrap gap-2">
                       {selectedAgent.whatsappEnabled && <span className="px-2 py-1 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 rounded text-xs font-medium">WhatsApp (Baileys)</span>}
@@ -411,9 +411,9 @@ export default function AgentsFleetPage() {
                   <div className="flex-1 flex flex-col bg-card border border-border rounded-lg overflow-hidden">
                     <div className="p-4 border-b border-border bg-secondary/30 flex justify-between items-center">
                       <h4 className="text-sm font-semibold">IDENTITY.md</h4>
-                      <a href="/" className="text-xs text-primary hover:underline flex items-center gap-1" title="Editar en Mission Control">
-                          <Settings2 size={12}/> Editar
-                        </a>
+                      <button onClick={() => window.dispatchEvent(new CustomEvent('open-edit-agent', { detail: { agent: selectedAgent, tab: 'general' } }))} className="text-xs text-primary hover:underline flex items-center gap-1" title="Editar Identity">
+                            <Settings2 size={12}/> Editar
+                          </button>
                     </div>
                     <div className="flex-1 p-5 overflow-y-auto text-sm text-muted-foreground font-mono whitespace-pre-wrap leading-relaxed min-h-[300px]">
                       {selectedAgent.identity || "No hay instrucciones de identidad configuradas."}
@@ -422,9 +422,9 @@ export default function AgentsFleetPage() {
                   <div className="flex-1 flex flex-col bg-card border border-border rounded-lg overflow-hidden">
                     <div className="p-4 border-b border-border bg-secondary/30 flex justify-between items-center">
                       <h4 className="text-sm font-semibold">SOUL.md</h4>
-                      <a href="/" className="text-xs text-primary hover:underline flex items-center gap-1" title="Editar en Mission Control">
-                          <Settings2 size={12}/> Editar
-                        </a>
+                      <button onClick={() => window.dispatchEvent(new CustomEvent('open-edit-agent', { detail: { agent: selectedAgent, tab: 'general' } }))} className="text-xs text-primary hover:underline flex items-center gap-1" title="Editar Soul">
+                            <Settings2 size={12}/> Editar
+                          </button>
                     </div>
                     <div className="flex-1 p-5 overflow-y-auto text-sm text-muted-foreground font-mono whitespace-pre-wrap leading-relaxed min-h-[300px]">
                       {selectedAgent.soul || "No hay instrucciones de soul configuradas."}

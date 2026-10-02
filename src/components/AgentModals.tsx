@@ -18,8 +18,13 @@ export default function AgentModals() {
   useEffect(() => {
     const handleOpenAdd = () => setShowAddModal(true);
     const handleOpenEdit = (e: any) => {
-      setEditingAgent(e.detail);
-      setActiveTab("general");
+      if (e.detail && e.detail.agent) {
+        setEditingAgent(e.detail.agent);
+        setActiveTab(e.detail.tab || "general");
+      } else {
+        setEditingAgent(e.detail);
+        setActiveTab("general");
+      }
     };
 
     window.addEventListener("open-add-agent", handleOpenAdd);
