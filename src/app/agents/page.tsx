@@ -198,9 +198,6 @@ export default function AgentsFleetPage() {
               <button onClick={() => setActiveTab('mission')} className={`py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${activeTab === 'mission' ? 'border-primary text-foreground' : 'border-transparent text-muted-foreground hover:text-foreground'}`}>
                 Mission
               </button>
-              <button onClick={() => setActiveTab('terminal')} className={`py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${activeTab === 'terminal' ? 'border-primary text-foreground' : 'border-transparent text-muted-foreground hover:text-foreground'}`}>
-                Terminal en vivo
-              </button>
               <button onClick={() => setActiveTab('config')} className={`py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${activeTab === 'config' ? 'border-primary text-foreground' : 'border-transparent text-muted-foreground hover:text-foreground'}`}>
                 Resumen de Configuración
               </button>
@@ -323,11 +320,8 @@ export default function AgentsFleetPage() {
                       </div>
                     </div>
                   </div>
-                </div>
-              )}
-
-              {activeTab === 'terminal' && (
-                <div className="h-full flex flex-col">
+                    {/* Terminal movido */}
+                    <div className="flex flex-col h-[400px]">
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex gap-2">
                       <span className="w-3 h-3 rounded-full bg-red-500"></span>
@@ -356,8 +350,10 @@ export default function AgentsFleetPage() {
                       <div className="mt-4 text-zinc-500 italic">El proceso del agente está pausado. No hay nuevos logs.</div>
                     )}
                   </div>
+                    </div>
                 </div>
               )}
+
 
               {activeTab === 'config' && (
                 <div className="space-y-6">
