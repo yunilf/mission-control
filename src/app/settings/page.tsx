@@ -41,7 +41,7 @@ export default function SettingsPage() {
     geminiApiKey: "",
     openaiApiKey: "",
     anthropicApiKey: "",
-    globalSecurityChecklist: [] as string[],
+    globalSecurityChecklist: OPTIONAL_PERSONALITY_RULES,
     globalBehaviorRules: "",
   });
 
@@ -55,7 +55,7 @@ export default function SettingsPage() {
           setSettings({ 
             ...settings, 
             ...data,
-            globalSecurityChecklist: data.globalSecurityChecklist || []
+            globalSecurityChecklist: data.globalSecurityChecklist !== undefined ? data.globalSecurityChecklist : OPTIONAL_PERSONALITY_RULES
           });
         }
       } catch (error) {
