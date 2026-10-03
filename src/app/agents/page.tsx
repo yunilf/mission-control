@@ -1327,36 +1327,75 @@ const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
 
                         {editingAgent.whatsappEnabled && (
                             <div className="p-5 space-y-5 bg-background">
-                              <div>
-                                <label className="text-xs font-medium flex items-center gap-2"><Smartphone size={14}/> Número de WhatsApp</label>
-                                <p className="text-[10px] text-muted-foreground mb-2 mt-1">Incluye el código de país sin el signo +, ejemplo: 18291234567</p>
-                                <div className="flex flex-col sm:flex-row gap-3">
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 border-b border-border pb-5">
+                                <div>
+                                  <label className="text-xs font-medium text-muted-foreground">URL del Nodo OpenClaw</label>
+                                  <input 
+                                    type="url" 
+                                    value={editingAgent.openclawUrl || "http://localhost:18790"} 
+                                    onChange={e => setEditingAgent({...editingAgent, openclawUrl: e.target.value})} 
+                                    placeholder="http://localhost:18790" 
+                                    className="w-full mt-1 bg-secondary/50 border border-border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-emerald-500" 
+                                  />
+                                </div>
+                                <div>
+                                  <label className="text-xs font-medium flex items-center gap-2"><Smartphone size={14}/> Número de WhatsApp</label>
                                   <input 
                                     type="text" 
                                     value={editingAgent.whatsappNumber || ""} 
                                     onChange={e => setEditingAgent({...editingAgent, whatsappNumber: e.target.value.replace(/[^0-9]/g, '')})} 
                                     placeholder="18291234567" 
-                                    className="flex-1 bg-secondary/50 border border-border rounded-md px-3 py-2.5 text-sm font-mono focus:outline-none focus:ring-1 focus:ring-emerald-500" 
+                                    className="w-full mt-1 bg-secondary/50 border border-border rounded-md px-3 py-2 text-sm font-mono focus:outline-none focus:ring-1 focus:ring-emerald-500" 
                                   />
-                                  <button 
-                                    type="button" 
-                                    disabled={!editingAgent.whatsappNumber || editingAgent.whatsappNumber.length < 10 || isGeneratingPairingCode}
-                                    onClick={() => {
-                                      setIsGeneratingPairingCode(true);
-                                      setPairingCode("");
-                                      // Simular latencia de conexión local de OpenClaw
-                                      setTimeout(() => {
-                                        // Generar código estilo XXXX-XXXX
-                                        const code = Array.from({length: 8}, () => "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"[Math.floor(Math.random() * 36)]).join('').match(/.{1,4}/g)?.join('-') || "W7X9-B2M4";
-                                        setPairingCode(code);
-                                        setIsGeneratingPairingCode(false);
-                                      }, 2000);
-                                    }} 
-                                    className="px-5 py-2.5 bg-emerald-500 text-white text-sm font-bold rounded-md hover:bg-emerald-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 whitespace-nowrap shadow-sm"
-                                  >
-                                    {isGeneratingPairingCode ? <><Loader2 size={16} className="animate-spin"/> Conectando...</> : 'Vincular Número'}
-                                  </button>
                                 </div>
+                              </div>
+                              
+                              <div className="flex justify-end">
+                                <button 
+                                  type="button" 
+                                  disabled={!editingAgent.whatsappNumber || editingAgent.whatsappNumber.length < 10 || isGeneratingPairingCode}
+                                  onClick={async () => {
+                                    setIsGeneratingPairingCode(true);
+                                    setPairingCode("");
+                                    const baseUrl = (editingAgent.openclawUrl || "http://localhost:18790").replace(/\/$/, "");
+                                    
+                                    try {
+                                      // Llamada a la API de OpenClaw (asumiendo endpoint genérico)
+                                      const response = await fetch(`${baseUrl}/api/channels/whatsapp/pair`, {
+                                        method: "POST",
+                                        headers: {
+                                          "Content-Type": "application/json"
+                                        },
+                                        body: JSON.stringify({ number: editingAgent.whatsappNumber })
+                                      });
+                                      
+                                      if (!response.ok) {
+                                        const text = await response.text();
+                                        throw new Error(`Error HTTP ${response.status}: ${text}`);
+                                      }
+                                      
+                                      const data = await response.json();
+                                      if (data && data.pairingCode) {
+                                        // Formatear código a XXXX-XXXX si viene sin guión
+                                        let code = data.pairingCode;
+                                        if (code.length === 8 && !code.includes("-")) {
+                                            code = code.match(/.{1,4}/g)?.join('-') || code;
+                                        }
+                                        setPairingCode(code);
+                                      } else {
+                                        throw new Error("Respuesta de API inválida: No se encontró 'pairingCode'");
+                                      }
+                                    } catch (err: any) {
+                                      console.error("Error al conectar con OpenClaw:", err);
+                                      alert("Error de conexión:\n" + err.message + "\n\n¿CORS Error? Asegúrate de que OpenClaw tenga este dominio web (Firebase) agregado en OPENCLAW_GATEWAY_CONTROLUI_ALLOWEDORIGINS.");
+                                    } finally {
+                                      setIsGeneratingPairingCode(false);
+                                    }
+                                  }} 
+                                  className="px-5 py-2.5 bg-emerald-500 text-white text-sm font-bold rounded-md hover:bg-emerald-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 whitespace-nowrap shadow-sm w-full sm:w-auto"
+                                >
+                                  {isGeneratingPairingCode ? <><Loader2 size={16} className="animate-spin"/> Conectando a OpenClaw...</> : 'Solicitar Pairing Code a API'}
+                                </button>
                               </div>
                               
                               {(pairingCode || isGeneratingPairingCode) && (
@@ -1367,7 +1406,7 @@ const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
                                         <div className="w-12 h-12 border-4 border-emerald-500/30 rounded-full"></div>
                                         <div className="w-12 h-12 border-4 border-emerald-500 rounded-full border-t-transparent animate-spin absolute top-0 left-0"></div>
                                       </div>
-                                      <p className="text-sm font-medium text-emerald-600 dark:text-emerald-400">Generando Pairing Code con servidor OpenClaw local...</p>
+                                      <p className="text-sm font-medium text-emerald-600 dark:text-emerald-400">Solicitando Pairing Code a la API...</p>
                                     </div>
                                   ) : (
                                     <div className="flex flex-col items-center">
