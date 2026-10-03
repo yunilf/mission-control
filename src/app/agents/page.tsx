@@ -1463,12 +1463,12 @@ const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
                                     
                                     try {
                                       // Llamada a la API de OpenClaw (asumiendo endpoint genérico)
-                                      const response = await fetch(`${baseUrl}/api/channels/whatsapp/pair`, {
+                                      const response = await fetch(`http://localhost:18780/api/channels/whatsapp/pair`, {
                                         method: "POST",
                                         headers: {
                                           "Content-Type": "application/json"
                                         },
-                                        body: JSON.stringify({ number: editingAgent.whatsappNumber })
+                                        body: JSON.stringify({ number: editingAgent.whatsappNumber, botId: editingAgent.id })
                                       });
                                       
                                       if (!response.ok) {
