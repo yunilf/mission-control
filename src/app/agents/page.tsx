@@ -45,8 +45,6 @@ export default function AgentsFleetPage() {
   const [clients, setClients] = useState<any[]>([]);
   const [selectedAgentId, setSelectedAgentId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState("monitor");
-  const [identityMode, setIdentityMode] = useState<'form'|'code'>('form');
-  const [soulMode, setSoulMode] = useState<'form'|'code'>('form');
   const [showSubagentModal, setShowSubagentModal] = useState(false);
   const [newSubagentName, setNewSubagentName] = useState('');
   const [newSubagentMission, setNewSubagentMission] = useState('');
@@ -1013,6 +1011,46 @@ const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
                           {editingAgent.identity || "El archivo se generará al llenar los campos..."}
                         </div>
                       </details>
+                        <div className="mt-6 flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-secondary/20 border border-border rounded-lg gap-4">
+                          <div>
+                            <h4 className="text-sm font-medium">¿Ya tienes tu propio SOUL.md?</h4>
+                            <p className="text-xs text-muted-foreground mt-1">Sube el archivo directamente y reemplaza esta configuración.</p>
+                          </div>
+                          <label className="cursor-pointer bg-secondary hover:bg-secondary/80 text-foreground px-4 py-2 rounded-md text-sm transition-colors flex items-center justify-center gap-2 whitespace-nowrap">
+                             <Upload size={14} /> Subir SOUL.md
+                             <input type="file" accept=".md" className="hidden" onChange={(e) => {
+                                const file = e.target.files?.[0];
+                                if (!file) return;
+                                const reader = new FileReader();
+                                reader.onload = (ev) => {
+                                   const text = ev.target?.result;
+                                   setEditingAgent({...editingAgent, soul: text});
+                                   alert('Archivo SOUL.md cargado. Recuerda Guardar Cambios.');
+                                };
+                                reader.readAsText(file);
+                             }} />
+                          </label>
+                        </div>
+                        <div className="mt-6 flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-secondary/20 border border-border rounded-lg gap-4">
+                          <div>
+                            <h4 className="text-sm font-medium">¿Ya tienes tu propio IDENTITY.md?</h4>
+                            <p className="text-xs text-muted-foreground mt-1">Sube el archivo directamente y reemplaza esta configuración.</p>
+                          </div>
+                          <label className="cursor-pointer bg-secondary hover:bg-secondary/80 text-foreground px-4 py-2 rounded-md text-sm transition-colors flex items-center justify-center gap-2 whitespace-nowrap">
+                             <Upload size={14} /> Subir IDENTITY.md
+                             <input type="file" accept=".md" className="hidden" onChange={(e) => {
+                                const file = e.target.files?.[0];
+                                if (!file) return;
+                                const reader = new FileReader();
+                                reader.onload = (ev) => {
+                                   const text = ev.target?.result;
+                                   setEditingAgent({...editingAgent, identity: text});
+                                   alert('Archivo IDENTITY.md cargado. Recuerda Guardar Cambios.');
+                                };
+                                reader.readAsText(file);
+                             }} />
+                          </label>
+                        </div>
                     </div>
                     </div>
                   </div>
