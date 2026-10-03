@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { collection, addDoc, onSnapshot } from "firebase/firestore";
+import { collection, addDoc, onSnapshot, doc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { Bot, X } from "lucide-react";
 import { STRICT_RULES_OPTIONS, generateIdentity } from '@/app/agents/page';
@@ -15,7 +15,7 @@ export default function AgentModals() {
   const [globalSettings, setGlobalSettings] = useState<any>(null);
 
   useEffect(() => {
-    const unsubGlobal = onSnapshot(doc(db, "settings", "global"), (snap) => {
+    const unsubGlobal = onSnapshot(doc(db, "settings", "global"), (snap: any) => {
       if (snap.exists()) setGlobalSettings(snap.data());
     });
     const unsubClients = onSnapshot(collection(db, "clients"), (snapshot) => {
