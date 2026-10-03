@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { collection, onSnapshot, doc, updateDoc, setDoc, getDoc } from "firebase/firestore";
 import { db, storage } from "@/lib/firebase";
 import { ref, uploadBytesResumable, getDownloadURL, deleteObject } from "firebase/storage";
-import { Bot, Activity, Terminal, Cpu, MemoryStick, Play, Square, Settings2, ShieldCheck, Clock, Plus, Power, Sparkles, X, User, FileText, Blocks, MessageSquare, Trash, Upload, Copy, Loader2, Smartphone, Check } from "lucide-react";
+import { Bot, Activity, Terminal, Cpu, MemoryStick, Play, Square, Settings2, ShieldCheck, Clock, Plus, Power, Sparkles, X, User, FileText, Blocks, MessageSquare, Trash, Upload, Copy, Loader2, Smartphone, Check, ChevronDown } from "lucide-react";
 
 export const STRICT_RULES_OPTIONS = [
   "Prohibido dar respuestas largas (Ser siempre breve y directo)",
