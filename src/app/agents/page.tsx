@@ -14,6 +14,8 @@ export default function AgentsFleetPage() {
   const [showSubagentModal, setShowSubagentModal] = useState(false);
   const [newSubagentName, setNewSubagentName] = useState('');
   const [newSubagentMission, setNewSubagentMission] = useState('');
+  const [newSubagentModel, setNewSubagentModel] = useState('google/gemini-2.5-flash');
+  const [editingSubagentIndex, setEditingSubagentIndex] = useState<number | null>(null);
   const [dutiesList, setDutiesList] = useState<string[]>([]);
   const [isEditingDuties, setIsEditingDuties] = useState(false);
   const [isCustomMission, setIsCustomMission] = useState(false);
@@ -127,17 +129,31 @@ export default function AgentsFleetPage() {
     setIsSavingSubagent(true);
     try {
       const currentSubagents = selectedAgent.subagents || [];
-      const updatedSubagents = [...currentSubagents, {
+      let updatedSubagents;
+      
+      const subagentData = {
         name: newSubagentName.toLowerCase().replace(/\s+/g, '_'),
         mission: newSubagentMission,
-        model: 'google/gemini-2.5-flash'
-      }];
+        model: newSubagentModel
+      };
+
+      if (editingSubagentIndex !== null) {
+        updatedSubagents = [...currentSubagents];
+        updatedSubagents[editingSubagentIndex] = subagentData;
+      } else {
+        updatedSubagents = [...currentSubagents, subagentData];
+      }
+
       await updateDoc(doc(db, "agents", selectedAgent.id), {
         subagents: updatedSubagents
       });
       setShowSubagentModal(false);
       setNewSubagentName('');
       setNewSubagentMission('');
+      setNewSubagentModel('google/gemini-2.5-flash');
+      setEditingSubagentIndex(null);
+      setIsCustomMission(false);
+      setIsEditingDuties(false);
     } catch (error: any) {
       alert("Error saving subagent: " + error.message);
     } finally {
@@ -774,7 +790,7 @@ const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
                   <div className="bg-secondary/20 border border-border rounded-lg p-5">
                     <div className="flex items-center justify-between mb-3">
                       <h4 className="text-sm font-semibold">Sub-agentes (Equipo)</h4>
-                        <button onClick={() => setShowSubagentModal(true)} className="text-xs text-primary hover:underline flex items-center gap-1" title="Agregar Sub-agente">
+                        <button onClick={() => { setNewSubagentName(''); setNewSubagentMission(''); setNewSubagentModel('google/gemini-2.5-flash'); setEditingSubagentIndex(null); setIsCustomMission(false); setIsEditingDuties(false); setShowSubagentModal(true); }} className="text-xs text-primary hover:underline flex items-center gap-1" title="Agregar Sub-agente">
                             <Plus size={12}/> Agregar Sub-agente
                         </button>
                       </div>
@@ -791,14 +807,31 @@ const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
                                    <div className="text-xs text-muted-foreground line-clamp-1">{sub.mission ? sub.mission : (sub.model || 'google/gemini-2.5-flash')}</div>
                                  </div>
                                </div>
-                               <button className="text-xs text-red-500 hover:text-red-400" onClick={async () => {
-                                 if (confirm('¿Eliminar este sub-agente?')) {
-                                   const filtered = selectedAgent.subagents.filter((_: any, index: number) => index !== i);
-                                   await updateDoc(doc(db, "agents", selectedAgent.id), { subagents: filtered });
-                                 }
-                               }}>
-                                 Eliminar
-                               </button>
+                                                              <div className="flex items-center gap-3">
+                                 <button className="text-xs text-blue-500 hover:text-blue-400" onClick={() => {
+                                   setNewSubagentName(sub.name);
+                                   setNewSubagentMission(sub.mission || '');
+                                   setNewSubagentModel(sub.model || 'google/gemini-2.5-flash');
+                                   setEditingSubagentIndex(i);
+                                   // Check if mission is custom
+                                   if (sub.mission && !dutiesList.includes(sub.mission)) {
+                                     setIsCustomMission(true);
+                                   } else {
+                                     setIsCustomMission(false);
+                                   }
+                                   setShowSubagentModal(true);
+                                 }}>
+                                   Editar
+                                 </button>
+                                 <button className="text-xs text-red-500 hover:text-red-400" onClick={async () => {
+                                   if (confirm('¿Eliminar este sub-agente?')) {
+                                     const filtered = selectedAgent.subagents.filter((_: any, index: number) => index !== i);
+                                     await updateDoc(doc(db, "agents", selectedAgent.id), { subagents: filtered });
+                                   }
+                                 }}>
+                                   Eliminar
+                                 </button>
+                               </div>
                             </div>
                           ))
                       ) : (
@@ -1228,8 +1261,8 @@ const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
           <div className="bg-card border border-border w-full max-w-md rounded-xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
             <div className="p-5 border-b border-border bg-secondary/20 flex justify-between items-center">
-              <h3 className="font-bold flex items-center gap-2"><Bot className="text-primary" size={18}/> Nuevo Sub-agente</h3>
-              <button type="button" onClick={() => { setShowSubagentModal(false); setIsCustomMission(false); setIsEditingDuties(false); }} className="text-muted-foreground hover:text-foreground">
+              <h3 className="font-bold flex items-center gap-2"><Bot className="text-primary" size={18}/> {editingSubagentIndex !== null ? "Editar Sub-agente" : "Nuevo Sub-agente"}</h3>
+              <button type="button" onClick={() => { setShowSubagentModal(false); setIsCustomMission(false); setIsEditingDuties(false); setEditingSubagentIndex(null); setEditingSubagentIndex(null); }} className="text-muted-foreground hover:text-foreground">
                 <X size={18} />
               </button>
             </div>
@@ -1239,6 +1272,15 @@ const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
                 <input type="text" value={newSubagentName} onChange={e => setNewSubagentName(e.target.value)} placeholder="Ej. investigador_web" className="w-full bg-background border border-border rounded-md px-3 py-2 text-sm focus:ring-1 focus:ring-primary focus:outline-none" required />
               </div>
                               <div>
+                  <label className="text-sm font-medium block mb-1">Modelo de IA</label>
+                  <select value={newSubagentModel} onChange={e => setNewSubagentModel(e.target.value)} className="w-full bg-background border border-border rounded-md px-3 py-2 text-sm focus:ring-1 focus:ring-primary focus:outline-none">
+                    <option value="google/gemini-2.5-flash">Gemini 2.5 Flash</option>
+                    <option value="google/gemini-2.5-pro">Gemini 2.5 Pro</option>
+                    <option value="meta-llama/llama-3-70b-instruct">Llama 3 70B</option>
+                    <option value="meta-llama/llama-3-8b-instruct">Llama 3 8B</option>
+                  </select>
+                </div>
+                <div>
                   <div className="flex justify-between items-center mb-1">
                     <label className="text-sm font-medium">Misión (Deberes)</label>
                     <button type="button" onClick={() => setIsEditingDuties(!isEditingDuties)} className="text-xs text-primary hover:underline">
@@ -1304,7 +1346,7 @@ const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
               <div className="pt-2 flex justify-end gap-3">
                 <button type="button" onClick={() => { setShowSubagentModal(false); setIsCustomMission(false); setIsEditingDuties(false); }} className="px-4 py-2 text-sm font-medium hover:bg-secondary rounded-md">Cancelar</button>
                 <button type="submit" disabled={isSavingSubagent} className="px-4 py-2 text-sm font-medium bg-primary text-primary-foreground rounded-md disabled:opacity-50">
-                  {isSavingSubagent ? "Guardando..." : "Agregar Sub-agente"}
+                  {isSavingSubagent ? "Guardando..." : (editingSubagentIndex !== null ? "Guardar Cambios" : "Agregar Sub-agente")}
                 </button>
               </div>
             </form>
