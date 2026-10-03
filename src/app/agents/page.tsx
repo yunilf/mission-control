@@ -42,6 +42,7 @@ export const generateIdentity = (data: any) => {
 
 export default function AgentsFleetPage() {
   const [agents, setAgents] = useState<any[]>([]);
+  const [globalSettings, setGlobalSettings] = useState<any>(null);
   const [clients, setClients] = useState<any[]>([]);
   const [selectedAgentId, setSelectedAgentId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState("monitor");
@@ -78,6 +79,9 @@ export default function AgentsFleetPage() {
 
   
   useEffect(() => {
+    getDoc(doc(db, "settings", "global")).then(snap => {
+      if (snap.exists()) setGlobalSettings(snap.data());
+    });
     const unsubDuties = onSnapshot(doc(db, "settings", "duties"), (docSnap) => {
       if (docSnap.exists() && docSnap.data().list) {
         setDutiesList(docSnap.data().list);
