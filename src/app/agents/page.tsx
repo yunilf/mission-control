@@ -990,7 +990,7 @@ const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
                           <button 
                             type="button"
                             onClick={() => {
-                              const path = `\\\\wsl.localhost\\Ubuntu\\home\\yunil\\agencia-bots\\.agents\\${editingAgent?.id}\\IDENTITY.md`;
+                              const path = `\\\\wsl.localhost\\Ubuntu\\home\\yunil\\agencia-bots\\clientes\\${editingAgent?.id}\\workspace\\IDENTITY.md`;
                               navigator.clipboard.writeText(path);
                               alert("Ruta copiada al portapapeles:\n" + path);
                             }}
@@ -1107,7 +1107,7 @@ const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
                         <button 
                           type="button"
                           onClick={() => {
-                            const path = `\\\\wsl.localhost\\Ubuntu\\home\\yunil\\agencia-bots\\.agents\\${editingAgent?.id}\\SOUL.md`;
+                            const path = `\\\\wsl.localhost\\Ubuntu\\home\\yunil\\agencia-bots\\clientes\\${editingAgent?.id}\\workspace\\SOUL.md`;
                             navigator.clipboard.writeText(path);
                             alert("Ruta copiada al portapapeles:\n" + path);
                           }}
