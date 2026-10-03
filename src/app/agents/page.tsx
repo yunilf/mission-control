@@ -1004,7 +1004,7 @@ const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
 
                         <details className="group border border-border rounded-lg bg-secondary/10">
                           <summary className="p-3 text-sm font-medium cursor-pointer list-none flex justify-between items-center hover:bg-secondary/20 transition-colors">
-                            <span>5. Reglas Globales y de Personalidad</span>
+                            <span>5. predeterminados</span>
                             <ChevronDown size={16} className="group-open:rotate-180 transition-transform text-muted-foreground" />
                           </summary>
                           <div className="p-4 border-t border-border">
