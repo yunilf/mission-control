@@ -12,12 +12,16 @@ export default function AgentModals() {
   const [clients, setClients] = useState<any[]>([]);
   const [newAgentRole, setNewAgentRole] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [globalSettings, setGlobalSettings] = useState<any>(null);
 
   useEffect(() => {
+    const unsubGlobal = onSnapshot(doc(db, "settings", "global"), (snap) => {
+      if (snap.exists()) setGlobalSettings(snap.data());
+    });
     const unsubClients = onSnapshot(collection(db, "clients"), (snapshot) => {
       setClients(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
     });
-    return () => unsubClients();
+    return () => { unsubClients(); unsubGlobal(); };
   }, []);
 
   useEffect(() => {
@@ -48,9 +52,9 @@ export default function AgentModals() {
         tokens: "0",
         uptime: "0h",
         createdAt: new Date().toISOString(),
-        identity: generateIdentity({ ruleChecklist: STRICT_RULES_OPTIONS }),
+        identity: generateIdentity({ ruleChecklist: Array.from(new Set([...STRICT_RULES_OPTIONS, ...(globalSettings?.globalSecurityChecklist || []), ...(globalSettings?.customOptionalRules || [])])) }),
         identityData: {
-          ruleChecklist: STRICT_RULES_OPTIONS
+          ruleChecklist: Array.from(new Set([...STRICT_RULES_OPTIONS, ...(globalSettings?.globalSecurityChecklist || []), ...(globalSettings?.customOptionalRules || [])]))
         },
         soul: "",
         soulData: {},
