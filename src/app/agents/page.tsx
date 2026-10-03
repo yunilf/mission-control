@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { collection, onSnapshot, doc, updateDoc } from "firebase/firestore";
 import { db, storage } from "@/lib/firebase";
 import { ref, uploadBytesResumable, getDownloadURL, deleteObject } from "firebase/storage";
-import { Bot, Activity, Terminal, Cpu, MemoryStick, Play, Square, Settings2, ShieldCheck, Clock, Plus, Power, Sparkles, X, User } from "lucide-react";
+import { Bot, Activity, Terminal, Cpu, MemoryStick, Play, Square, Settings2, ShieldCheck, Clock, Plus, Power, Sparkles, X, User, FileText, Blocks, MessageSquare } from "lucide-react";
 
 export default function AgentsFleetPage() {
   const [agents, setAgents] = useState<any[]>([]);
@@ -776,7 +776,7 @@ const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
                 <div className="h-full overflow-y-auto p-6 pb-24">
                   <div className="bg-card border border-border rounded-xl p-6 shadow-sm max-w-4xl mx-auto">
                     <h3 className="text-lg font-semibold border-b border-border pb-3 mb-5">Base de Conocimiento</h3>
-                    
+                    /* NOT FOUND */
                   </div>
                 </div>
               )}
@@ -785,7 +785,7 @@ const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
                 <div className="h-full overflow-y-auto p-6 pb-24">
                   <div className="bg-card border border-border rounded-xl p-6 shadow-sm max-w-4xl mx-auto">
                     <h3 className="text-lg font-semibold border-b border-border pb-3 mb-5">Canales de Comunicación</h3>
-                    
+                    /* NOT FOUND */
                   </div>
                 </div>
               )}
@@ -794,7 +794,7 @@ const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
                 <div className="h-full overflow-y-auto p-6 pb-24">
                   <div className="bg-card border border-border rounded-xl p-6 shadow-sm max-w-4xl mx-auto">
                     <h3 className="text-lg font-semibold border-b border-border pb-3 mb-5">Integraciones y Plugins</h3>
-                    
+                    /* NOT FOUND */
                   </div>
                 </div>
               )}
