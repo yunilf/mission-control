@@ -1,0 +1,7 @@
+{activeTab === 'identidad' ? 'border-primary text-foreground' : 'border-transparent text-muted-foreground hover:text-foreground'}`}>
+                Identidad
+              </button>
+              <button onClick={() => setActiveTab('subagents')} className={`py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${activeTab === 'subagents' ? 'border-primary text-foreground' : 'border-transparent text-muted-foreground hover:text-foreground'}`}>
+                Sub-agentes
+              </button>
+              <button onClick={() => setActiveTab('conocimiento')} className={`py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap $

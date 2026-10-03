@@ -504,6 +504,9 @@ const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
               <button onClick={() => setActiveTab('identidad')} className={`py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${activeTab === 'identidad' ? 'border-primary text-foreground' : 'border-transparent text-muted-foreground hover:text-foreground'}`}>
                 Identidad
               </button>
+              <button onClick={() => setActiveTab('tareas')} className={`py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${activeTab === 'tareas' ? 'border-primary text-foreground' : 'border-transparent text-muted-foreground hover:text-foreground'}`}>
+                Tareas
+              </button>
               <button onClick={() => setActiveTab('subagents')} className={`py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${activeTab === 'subagents' ? 'border-primary text-foreground' : 'border-transparent text-muted-foreground hover:text-foreground'}`}>
                 Sub-agentes
               </button>
@@ -798,20 +801,148 @@ const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                  <div className="space-y-8">
                     <div className="bg-card border border-border rounded-xl p-6 shadow-sm">
                       <h3 className="text-lg font-semibold border-b border-border pb-3 mb-5 flex items-center justify-between">
                         Identidad y Personalidad
                         <span className="text-xs font-normal text-muted-foreground">IDENTITY.md</span>
                       </h3>
+                      <div className="space-y-6">
+                      <div className="bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20 p-3 rounded-md text-xs mb-4">
+                        Responde estas preguntas para construir automáticamente el archivo <code>IDENTITY.md</code> de tu agente.
+                      </div>
                       
+                      <div className="space-y-4">
+                        {renderIdentityField('role', '1. ¿Cuál es el rol o profesión del agente?', 'Ej. Asesor de ventas experto en moda, Soporte técnico nivel 2, Recepcionista de clínica.', ROLE_OPTIONS, 'Ej. Experto en cierre de ventas inmobiliarias')}
+
+                        {renderIdentityField('tone', '2. ¿Qué tono de voz debe utilizar?', 'Ej. Amable y cercano, Profesional y directo, Entusiasta usando emojis.', TONE_OPTIONS, 'Ej. Formal, respetuoso pero muy empático')}
+
+                        {renderIdentityField('audience', '3. ¿A quién le está hablando? (Perfil de la audiencia)', 'Ej. Madres jóvenes, Emprendedores de tecnología, Personas mayores.', AUDIENCE_OPTIONS, 'Ej. Dueños de pequeños negocios locales')}
+
+                        {renderIdentityField('greeting', '4. Ejemplo de Saludo Típico', 'Una frase que muestre cómo iniciaría una conversación este agente.', GREETING_OPTIONS, 'Ej. ¡Hola! Qué alegría saludarte, ¿en qué te puedo ayudar hoy? 😊')}
+
+                        <div>
+                          <label className="text-sm font-medium">5. Reglas estrictas de Personalidad</label>
+                          <p className="text-xs text-muted-foreground mb-2">¿Qué cosas NUNCA debe hacer el agente respecto a su forma de ser?</p>
+                          <textarea 
+                            value={editingAgent.identityData?.rules || ""} 
+                            onChange={e => {
+                               const newData = { ...(editingAgent.identityData || {}), rules: e.target.value };
+                               setEditingAgent({...editingAgent, identityData: newData, identity: generateIdentity(newData)});
+                            }} 
+                            placeholder="- Nunca tutear al cliente
+- Jamás usar sarcasmo
+- No opinar sobre política" 
+                            className="w-full h-24 bg-background border border-border rounded-md px-3 py-2 text-sm resize-none focus:outline-none focus:border-primary" 
+                          />
+                        </div>
+                      </div>
+
+                      {/* Vista previa oculta del MD generado (opcional) */}
+                      <details className="mt-4">
+                        <summary className="text-xs text-muted-foreground cursor-pointer select-none">Ver archivo Markdown generado</summary>
+                        <div className="mt-2 p-3 bg-secondary/30 border border-border rounded-md text-xs font-mono whitespace-pre-wrap text-muted-foreground">
+                          {editingAgent.identity || "El archivo se generará al llenar los campos..."}
+                        </div>
+                      </details>
                     </div>
-                    <div className="bg-card border border-border rounded-xl p-6 shadow-sm">
-                      <h3 className="text-lg font-semibold border-b border-border pb-3 mb-5 flex items-center justify-between">
-                        Directivas y Lógica
-                        <span className="text-xs font-normal text-muted-foreground">SOUL.md</span>
-                      </h3>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+                            {activeTab === 'tareas' && editingAgent && (
+                <div className="h-full overflow-y-auto p-6 pb-24">
+                  <div className="bg-card border border-border rounded-xl p-6 shadow-sm max-w-4xl mx-auto">
+                    <h3 className="text-lg font-semibold border-b border-border pb-3 mb-5 flex items-center justify-between">
+                      Directivas (Tareas y Reglas)
+                      <span className="text-xs font-normal text-muted-foreground">SOUL.md</span>
+                    </h3>
+                    <div className="space-y-6">
+                      <div className="bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20 p-3 rounded-md text-xs mb-4">
+                        Responde estas preguntas para construir automáticamente el archivo <code>SOUL.md</code> con la lógica y directivas de tu agente.
+                      </div>
                       
+                      <div className="space-y-4">
+                        {renderSoulField('objective', '1. ¿Cuál es el objetivo principal del agente?', 'La meta principal que debe buscar en cada conversación.', OBJECTIVE_OPTIONS, 'Ej. Cerrar ventas de propiedades inmobiliarias')}
+                        {renderSoulField('pricing', '2. ¿Cómo debe manejar precios y descuentos?', 'Políticas sobre finanzas y negociación.', PRICING_OPTIONS, 'Ej. Solo dar precios por mensaje de voz (no soportado, pero como ejemplo)')}
+                        
+                        <div>
+                          <label className="text-sm font-medium">3. Protocolo de Transferencia Humana</label>
+                          <p className="text-xs text-muted-foreground mb-2">¿En qué momento debe el agente dejar de hablar y avisar a un agente humano? (Puedes seleccionar varias)</p>
+                          <div className="space-y-2 bg-background border border-border rounded-md p-3">
+                            {HANDOFF_OPTIONS.map(opt => {
+                              const currentHandoffs = (editingAgent.soulData?.handoff || "").split("|").filter(Boolean);
+                              const isChecked = currentHandoffs.includes(opt);
+                              return (
+                                <label key={opt} className="flex items-center gap-2 cursor-pointer">
+                                  <input 
+                                    type="checkbox" 
+                                    className="rounded border-gray-300 text-primary focus:ring-primary"
+                                    checked={isChecked}
+                                    onChange={e => {
+                                      let newHandoffs = [...currentHandoffs];
+                                      if (e.target.checked) newHandoffs.push(opt);
+                                      else newHandoffs = newHandoffs.filter(h => h !== opt);
+                                      const newVal = newHandoffs.join("|");
+                                      const newData = { ...(editingAgent.soulData || {}), handoff: newVal };
+                                      setEditingAgent({...editingAgent, soulData: newData, soul: generateSoul(newData)});
+                                    }}
+                                  />
+                                  <span className="text-sm">{opt}</span>
+                                </label>
+                              );
+                            })}
+                            <div className="pt-2 mt-2 border-t border-border">
+                              <label className="flex items-center gap-2 cursor-pointer mb-2">
+                                <input 
+                                  type="checkbox" 
+                                  className="rounded border-gray-300 text-primary focus:ring-primary"
+                                  checked={customSoulFields.handoff}
+                                  onChange={e => setCustomSoulFields(prev => ({...prev, handoff: e.target.checked}))}
+                                />
+                                <span className="text-sm font-medium">Otra regla personalizada...</span>
+                              </label>
+                              {customSoulFields.handoff && (
+                                <input 
+                                  type="text" 
+                                  placeholder="Ej. Si el cliente pide hablar con gerencia" 
+                                  className="w-full bg-background border border-border rounded-md px-3 py-2 text-sm focus:outline-none focus:border-primary"
+                                  value={(editingAgent.soulData?.handoffCustom || "")}
+                                  onChange={e => {
+                                      const newData = { ...(editingAgent.soulData || {}), handoffCustom: e.target.value };
+                                      setEditingAgent({...editingAgent, soulData: newData, soul: generateSoul(newData)});
+                                  }}
+                                />
+                              )}
+                            </div>
+                          </div>
+                        </div>
+
+                        {renderSoulField('style', '4. Estilo y longitud de respuesta', 'Cómo debe estructurar visualmente sus mensajes.', STYLE_OPTIONS, 'Ej. Siempre usar máximo 3 líneas de texto')}
+
+                        <div>
+                          <label className="text-sm font-medium">5. Reglas Extra (Opcional)</label>
+                          <p className="text-xs text-muted-foreground mb-2">Instrucciones o reglas específicas que el agente debe seguir estrictamente.</p>
+                          <textarea 
+                            value={editingAgent.soulData?.extra || ""} 
+                            onChange={e => {
+                               const newData = { ...(editingAgent.soulData || {}), extra: e.target.value };
+                               setEditingAgent({...editingAgent, soulData: newData, soul: generateSoul(newData)});
+                            }} 
+                            placeholder="- Solicitar siempre correo electrónico al final
+- Mencionar promoción de verano" 
+                            className="w-full h-24 bg-background border border-border rounded-md px-3 py-2 text-sm resize-none focus:outline-none focus:border-primary" 
+                          />
+                        </div>
+                      </div>
+
+                      <details className="mt-4">
+                        <summary className="text-xs text-muted-foreground cursor-pointer select-none">Ver archivo Markdown generado (Soul)</summary>
+                        <div className="mt-2 p-3 bg-secondary/30 border border-border rounded-md text-xs font-mono whitespace-pre-wrap text-muted-foreground">
+                          {editingAgent.soul || "El archivo se generará al llenar los campos..."}
+                        </div>
+                      </details>
                     </div>
                   </div>
                 </div>
