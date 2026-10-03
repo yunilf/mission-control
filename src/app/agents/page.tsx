@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { collection, onSnapshot, doc, updateDoc } from "firebase/firestore";
-import { db } from "@/lib/firebase";
+import { db, storage } from "@/lib/firebase";
+import { ref, uploadBytesResumable, getDownloadURL, deleteObject } from "firebase/storage";
 import { Bot, Activity, Terminal, Cpu, MemoryStick, Play, Square, Settings2, ShieldCheck, Clock, Plus, Power, Sparkles, X, User } from "lucide-react";
 
 export default function AgentsFleetPage() {
@@ -13,6 +14,13 @@ export default function AgentsFleetPage() {
   const [showSubagentModal, setShowSubagentModal] = useState(false);
   const [newSubagentName, setNewSubagentName] = useState('');
   const [newSubagentMission, setNewSubagentMission] = useState('');
+  const [editingAgent, setEditingAgent] = useState<any>(null);
+  const [customIdentityFields, setCustomIdentityFields] = useState({ role: false, tone: false, audience: false, greeting: false });
+  const [customSoulFields, setCustomSoulFields] = useState({ objective: false, pricing: false, handoff: false, style: false });
+  const [isUploadingKnowledge, setIsUploadingKnowledge] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [newLinkUrl, setNewLinkUrl] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
   const [isSavingSubagent, setIsSavingSubagent] = useState(false);
 
   const [mockLogs, setMockLogs] = useState<string[]>([
@@ -91,6 +99,247 @@ export default function AgentsFleetPage() {
   };
 
   const selectedAgent = agents.find(a => a.id === selectedAgentId);
+  
+  useEffect(() => {
+    if (selectedAgent && (!editingAgent || editingAgent.id !== selectedAgent.id)) {
+      setEditingAgent(selectedAgent);
+    }
+  }, [selectedAgent]);
+
+  const ROLE_OPTIONS = ["Asistente de Ventas", "Soporte Técnico", "Recepcionista", "Asesor Financiero"];
+  const TONE_OPTIONS = ["Profesional y formal", "Amigable y cercano", "Entusiasta y persuasivo", "Directo y conciso"];
+  const AUDIENCE_OPTIONS = ["Público General", "Jóvenes y Adolescentes", "Profesionales / B2B", "Personas Mayores"];
+  const GREETING_OPTIONS = ["¡Hola! ¿En qué te puedo ayudar hoy?", "Bienvenido, soy tu asistente virtual.", "¡Qué tal! Cuéntame qué necesitas."];
+
+  const renderIdentityField = (fieldKey: string, label: string, desc: string, options: string[], placeholder: string) => {
+    const currentValue = editingAgent.identityData?.[fieldKey] || "";
+    const isCustom = customIdentityFields[fieldKey as keyof typeof customIdentityFields] || (currentValue !== "" && !options.includes(currentValue));
+
+    return (
+      <div>
+        <label className="text-sm font-medium">{label}</label>
+        <p className="text-xs text-muted-foreground mb-2">{desc}</p>
+        
+        {!isCustom ? (
+          <select 
+            value={currentValue}
+            onChange={e => {
+              const val = e.target.value;
+              if (val === "CUSTOM") {
+                setCustomIdentityFields(prev => ({...prev, [fieldKey]: true}));
+                const newData = { ...(editingAgent.identityData || {}), [fieldKey]: "" };
+                setEditingAgent({...editingAgent, identityData: newData, identity: generateIdentity(newData)});
+              } else {
+                const newData = { ...(editingAgent.identityData || {}), [fieldKey]: val };
+                setEditingAgent({...editingAgent, identityData: newData, identity: generateIdentity(newData)});
+              }
+            }}
+            className="w-full bg-background border border-border rounded-md px-3 py-2 text-sm focus:outline-none focus:border-primary"
+          >
+            <option value="">-- Selecciona una opción --</option>
+            {options.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+            <option value="CUSTOM">Escribir algo personalizado...</option>
+          </select>
+        ) : (
+          <div className="flex items-center gap-2">
+            <input 
+              type="text" 
+              value={currentValue} 
+              onChange={e => {
+                 const newData = { ...(editingAgent.identityData || {}), [fieldKey]: e.target.value };
+                 setEditingAgent({...editingAgent, identityData: newData, identity: generateIdentity(newData)});
+              }} 
+              placeholder={placeholder} 
+              className="w-full bg-background border border-border rounded-md px-3 py-2 text-sm focus:outline-none focus:border-primary" 
+              autoFocus
+            />
+            <button 
+              type="button"
+              onClick={() => {
+                setCustomIdentityFields(prev => ({...prev, [fieldKey]: false}));
+                const newData = { ...(editingAgent.identityData || {}), [fieldKey]: "" };
+                setEditingAgent({...editingAgent, identityData: newData, identity: generateIdentity(newData)});
+              }}
+              className="p-2 text-muted-foreground hover:text-foreground hover:bg-secondary rounded-md"
+              title="Volver a opciones"
+            >
+              <X size={16} />
+            </button>
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  
+  const OBJECTIVE_OPTIONS = ["Vender productos del catálogo", "Resolver dudas de soporte técnico", "Agendar citas o reservaciones", "Captar leads (información de contacto)"];
+  const PRICING_OPTIONS = ["Dar precios fijos, sin descuentos", "Ofrecer descuentos si el cliente insiste", "Solo dar precios si el cliente lo solicita", "Negociar libremente"];
+  const HANDOFF_OPTIONS = ["Transferir si no sabe la respuesta", "Transferir si el cliente está molesto", "Solo transferir si el cliente lo pide explícitamente", "Nunca transferir, intentar resolver todo"];
+  const STYLE_OPTIONS = ["Respuestas muy cortas (1-2 oraciones)", "Párrafos estructurados con viñetas", "Respuestas detalladas y explicativas", "Responder siempre con una pregunta"];
+
+  const renderSoulField = (fieldKey: string, label: string, desc: string, options: string[], placeholder: string) => {
+    const currentValue = editingAgent.soulData?.[fieldKey] || "";
+    const isCustom = customSoulFields[fieldKey as keyof typeof customSoulFields] || (currentValue !== "" && !options.includes(currentValue));
+
+    return (
+      <div>
+        <label className="text-sm font-medium">{label}</label>
+        <p className="text-xs text-muted-foreground mb-2">{desc}</p>
+        
+        {!isCustom ? (
+          <select 
+            value={currentValue}
+            onChange={e => {
+              const val = e.target.value;
+              if (val === "CUSTOM") {
+                setCustomSoulFields(prev => ({...prev, [fieldKey]: true}));
+                const newData = { ...(editingAgent.soulData || {}), [fieldKey]: "" };
+                setEditingAgent({...editingAgent, soulData: newData, soul: generateSoul(newData)});
+              } else {
+                const newData = { ...(editingAgent.soulData || {}), [fieldKey]: val };
+                setEditingAgent({...editingAgent, soulData: newData, soul: generateSoul(newData)});
+              }
+            }}
+            className="w-full bg-background border border-border rounded-md px-3 py-2 text-sm focus:outline-none focus:border-primary"
+          >
+            <option value="">-- Selecciona una opción --</option>
+            {options.map(opt => <option key={opt} value={opt}>{opt}</option>)}
+            <option value="CUSTOM">Escribir algo personalizado...</option>
+          </select>
+        ) : (
+          <div className="flex items-center gap-2">
+            <input 
+              type="text" 
+              value={currentValue} 
+              onChange={e => {
+                 const newData = { ...(editingAgent.soulData || {}), [fieldKey]: e.target.value };
+                 setEditingAgent({...editingAgent, soulData: newData, soul: generateSoul(newData)});
+              }} 
+              placeholder={placeholder} 
+              className="w-full bg-background border border-border rounded-md px-3 py-2 text-sm focus:outline-none focus:border-primary" 
+              autoFocus
+            />
+            <button 
+              type="button"
+              onClick={() => {
+                setCustomSoulFields(prev => ({...prev, [fieldKey]: false}));
+                const newData = { ...(editingAgent.soulData || {}), [fieldKey]: "" };
+                setEditingAgent({...editingAgent, soulData: newData, soul: generateSoul(newData)});
+              }}
+              className="p-2 text-muted-foreground hover:text-foreground hover:bg-secondary rounded-md"
+              title="Volver a opciones"
+            >
+              <X size={16} />
+            </button>
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  const generateIdentity = (data: any) => {
+    let md = `# IDENTIDAD DEL AGENTE\n\n`;
+    if (data.role) md += `## 1. ROL Y PROPÓSITO\n${data.role}\n\n`;
+    if (data.tone) md += `## 2. TONO DE VOZ Y ESTILO\n${data.tone}\n\n`;
+    if (data.audience) md += `## 3. PERFIL DE LA AUDIENCIA\nTe diriges a: ${data.audience}\n\n`;
+    if (data.greeting) md += `## 4. EJEMPLO DE SALUDO\n> "${data.greeting}"\n\n`;
+    if (data.rules) md += `## 5. RESTRICCIONES DE PERSONALIDAD\n${data.rules}\n`;
+    return md;
+  };
+
+  const generateSoul = (data: any) => {
+    let md = `# DIRECTIVAS CENTRALES (SOUL)\n\n`;
+    if (data.objective) md += `## 1. OBJETIVO PRINCIPAL\nTu misión principal es: ${data.objective}\n\n`;
+    if (data.pricing) md += `## 2. MANEJO DE PRECIOS Y DESCUENTOS\nRegla financiera: ${data.pricing}\n\n`;
+    if (data.handoff || data.handoffCustom) {
+      let htext = (data.handoff || "").split("|").filter(Boolean).map((h: string) => "- " + h).join("\n");
+      if (data.handoffCustom) htext += "\n- " + data.handoffCustom;
+      md += `## 3. PROTOCOLO DE TRANSFERENCIA HUMANA\nCuándo pasar a un humano:\n${htext}\n\n`;
+    }
+    if (data.style) md += `## 4. ESTILO DE RESPUESTA\nFormato de mensajes: ${data.style}\n\n`;
+    if (data.extra) md += `## 5. REGLAS EXTRA\n${data.extra}\n`;
+    return md;
+  };
+
+
+const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || e.target.files.length === 0 || !editingAgent) return;
+    const file = e.target.files[0];
+    
+    setIsUploadingKnowledge(true);
+    setUploadProgress(0);
+    
+    try {
+      const storageRef = ref(storage, `agents/${editingAgent.id}/knowledge/${Date.now()}_${file.name}`);
+      const uploadTask = uploadBytesResumable(storageRef, file);
+      
+      uploadTask.on('state_changed', 
+        (snapshot) => {
+          const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+          setUploadProgress(progress);
+        }, 
+        (error) => {
+          alert("Error al subir archivo: " + error.message);
+          setIsUploadingKnowledge(false);
+        }, 
+        async () => {
+          const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+          const newKbItem = { type: 'file', name: file.name, url: downloadURL, path: uploadTask.snapshot.ref.fullPath };
+          const currentKb = editingAgent.knowledgeBase || [];
+          setEditingAgent({...editingAgent, knowledgeBase: [...currentKb, newKbItem]});
+          setIsUploadingKnowledge(false);
+          setUploadProgress(0);
+        }
+      );
+    } catch (err: any) {
+      alert("Error: " + err.message);
+      setIsUploadingKnowledge(false);
+    }
+  };
+
+  const handleAddLink = () => {
+    if (!newLinkUrl.trim() || !editingAgent) return;
+    const currentKb = editingAgent.knowledgeBase || [];
+    setEditingAgent({...editingAgent, knowledgeBase: [...currentKb, { type: 'link', name: newLinkUrl, url: newLinkUrl }]});
+    setNewLinkUrl("");
+  };
+
+  const handleRemoveKnowledge = async (index: number, item: any) => {
+    if (!editingAgent) return;
+    const currentKb = [...(editingAgent.knowledgeBase || [])];
+    currentKb.splice(index, 1);
+    setEditingAgent({...editingAgent, knowledgeBase: currentKb});
+    
+    if (item.type === 'file' && item.path) {
+      try {
+        await deleteObject(ref(storage, item.path));
+      } catch(e) {
+        console.error("Error deleting file from storage:", e);
+      }
+    }
+  };
+
+  const handleSaveEdit = async () => {
+    if (!editingAgent) return;
+    setIsSaving(true);
+    try {
+      await updateDoc(doc(db, "agents", editingAgent.id), {
+        name: editingAgent.name,
+        role: editingAgent.role,
+        clientId: editingAgent.clientId || "",
+        identity: editingAgent.identity,
+        identityData: editingAgent.identityData || {},
+        soul: editingAgent.soul,
+        soulData: editingAgent.soulData || {},
+        knowledgeBase: editingAgent.knowledgeBase || []
+      });
+      alert("Cambios guardados exitosamente.");
+    } catch (e: any) {
+      alert("Error guardando cambios: " + e.message);
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   if (!selectedAgent) {
     return (
@@ -427,32 +676,7 @@ export default function AgentsFleetPage() {
                 </div>
               )}
 
-              {activeTab === 'mission' && (
-                <div className="h-full flex flex-col md:flex-row gap-6">
-                  <div className="flex-1 flex flex-col bg-card border border-border rounded-lg overflow-hidden">
-                    <div className="p-4 border-b border-border bg-secondary/30 flex justify-between items-center">
-                      <h4 className="text-sm font-semibold">IDENTITY.md</h4>
-                      <button onClick={() => window.dispatchEvent(new CustomEvent('open-edit-agent', { detail: { agent: selectedAgent, tab: 'identidad' } }))} className="text-xs text-primary hover:underline flex items-center gap-1" title="Editar Identity">
-                            <Settings2 size={12}/> Editar
-                          </button>
-                    </div>
-                    <div className="flex-1 p-5 overflow-y-auto text-sm text-muted-foreground font-mono whitespace-pre-wrap leading-relaxed min-h-[300px]">
-                      {selectedAgent.identity || "No hay instrucciones de identidad configuradas."}
-                    </div>
-                  </div>
-                  <div className="flex-1 flex flex-col bg-card border border-border rounded-lg overflow-hidden">
-                    <div className="p-4 border-b border-border bg-secondary/30 flex justify-between items-center">
-                      <h4 className="text-sm font-semibold">SOUL.md</h4>
-                      <button onClick={() => window.dispatchEvent(new CustomEvent('open-edit-agent', { detail: { agent: selectedAgent, tab: 'soul' } }))} className="text-xs text-primary hover:underline flex items-center gap-1" title="Editar Soul">
-                            <Settings2 size={12}/> Editar
-                          </button>
-                    </div>
-                    <div className="flex-1 p-5 overflow-y-auto text-sm text-muted-foreground font-mono whitespace-pre-wrap leading-relaxed min-h-[300px]">
-                      {selectedAgent.soul || "No hay instrucciones de soul configuradas."}
-                    </div>
-                  </div>
-                </div>
-              )}
+              
               {activeTab === 'subagents' && (
                 <div className="space-y-6">
                   <div className="bg-secondary/20 border border-border rounded-lg p-5">
@@ -507,7 +731,93 @@ export default function AgentsFleetPage() {
         )}
       </div>
 
-      {showSubagentModal && (
+      
+                            {activeTab === 'identidad' && editingAgent && (
+                <div className="h-full overflow-y-auto p-6 space-y-8 pb-24">
+                  <div className="bg-card border border-border rounded-xl p-6 shadow-sm">
+                    <h3 className="text-lg font-semibold border-b border-border pb-3 mb-5">Nombre y Cliente</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div>
+                        <label className="text-sm font-medium">Nombre del Agente</label>
+                        <input type="text" value={editingAgent.name} onChange={e => setEditingAgent({...editingAgent, name: e.target.value})} className="w-full bg-background border border-border rounded-md px-3 py-2 text-sm mt-1" />
+                      </div>
+                      <div>
+                        <label className="text-sm font-medium">Cliente Asignado</label>
+                        <select value={editingAgent.clientId || ""} onChange={e => setEditingAgent({...editingAgent, clientId: e.target.value})} className="w-full bg-background border border-border rounded-md px-3 py-2 text-sm mt-1">
+                          <option value="">-- Sin asignar --</option>
+                          {clients.map(client => (
+                            <option key={client.id} value={client.id}>{client.name} {client.company ? `(${client.company})` : ''}</option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <div className="bg-card border border-border rounded-xl p-6 shadow-sm">
+                      <h3 className="text-lg font-semibold border-b border-border pb-3 mb-5 flex items-center justify-between">
+                        Identidad y Personalidad
+                        <span className="text-xs font-normal text-muted-foreground">IDENTITY.md</span>
+                      </h3>
+                      
+                    </div>
+                    <div className="bg-card border border-border rounded-xl p-6 shadow-sm">
+                      <h3 className="text-lg font-semibold border-b border-border pb-3 mb-5 flex items-center justify-between">
+                        Directivas y Lógica
+                        <span className="text-xs font-normal text-muted-foreground">SOUL.md</span>
+                      </h3>
+                      
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {activeTab === 'conocimiento' && editingAgent && (
+                <div className="h-full overflow-y-auto p-6 pb-24">
+                  <div className="bg-card border border-border rounded-xl p-6 shadow-sm max-w-4xl mx-auto">
+                    <h3 className="text-lg font-semibold border-b border-border pb-3 mb-5">Base de Conocimiento</h3>
+                    
+                  </div>
+                </div>
+              )}
+
+              {activeTab === 'canales' && editingAgent && (
+                <div className="h-full overflow-y-auto p-6 pb-24">
+                  <div className="bg-card border border-border rounded-xl p-6 shadow-sm max-w-4xl mx-auto">
+                    <h3 className="text-lg font-semibold border-b border-border pb-3 mb-5">Canales de Comunicación</h3>
+                    
+                  </div>
+                </div>
+              )}
+
+              {activeTab === 'integraciones' && editingAgent && (
+                <div className="h-full overflow-y-auto p-6 pb-24">
+                  <div className="bg-card border border-border rounded-xl p-6 shadow-sm max-w-4xl mx-auto">
+                    <h3 className="text-lg font-semibold border-b border-border pb-3 mb-5">Integraciones y Plugins</h3>
+                    
+                  </div>
+                </div>
+              )}
+
+              {/* Floating Save Button if changes are made */}
+              {editingAgent && JSON.stringify(editingAgent) !== JSON.stringify(selectedAgent) && (
+                <div className="absolute bottom-6 right-6 z-10 animate-in slide-in-from-bottom-4">
+                  <div className="bg-card border border-primary/20 shadow-xl rounded-full px-6 py-3 flex items-center gap-4">
+                    <span className="text-sm font-medium text-muted-foreground">Tienes cambios sin guardar</span>
+                    <button 
+                      onClick={handleSaveEdit} 
+                      disabled={isSaving}
+                      className="bg-primary text-primary-foreground px-5 py-2 rounded-full text-sm font-bold hover:brightness-110 transition-all shadow-md disabled:opacity-50"
+                    >
+                      {isSaving ? "Guardando..." : "Guardar Cambios"}
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {showSubagentModal && (
+
+
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
           <div className="bg-card border border-border w-full max-w-md rounded-xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
             <div className="p-5 border-b border-border bg-secondary/20 flex justify-between items-center">
