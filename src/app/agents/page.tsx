@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { collection, onSnapshot, doc, updateDoc, setDoc } from "firebase/firestore";
 import { db, storage } from "@/lib/firebase";
 import { ref, uploadBytesResumable, getDownloadURL, deleteObject } from "firebase/storage";
-import { Bot, Activity, Terminal, Cpu, MemoryStick, Play, Square, Settings2, ShieldCheck, Clock, Plus, Power, Sparkles, X, User, FileText, Blocks, MessageSquare, Trash } from "lucide-react";
+import { Bot, Activity, Terminal, Cpu, MemoryStick, Play, Square, Settings2, ShieldCheck, Clock, Plus, Power, Sparkles, X, User, FileText, Blocks, MessageSquare, Trash, Upload } from "lucide-react";
 
 export const STRICT_RULES_OPTIONS = [
   "Prohibido dar respuestas largas (Ser siempre breve y directo)",
@@ -45,6 +45,8 @@ export default function AgentsFleetPage() {
   const [clients, setClients] = useState<any[]>([]);
   const [selectedAgentId, setSelectedAgentId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState("monitor");
+  const [identityMode, setIdentityMode] = useState<'form'|'code'>('form');
+  const [soulMode, setSoulMode] = useState<'form'|'code'>('form');
   const [showSubagentModal, setShowSubagentModal] = useState(false);
   const [newSubagentName, setNewSubagentName] = useState('');
   const [newSubagentMission, setNewSubagentMission] = useState('');
