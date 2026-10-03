@@ -110,7 +110,7 @@ export default function SettingsPage() {
   const tabs = [
     { id: "general", label: "General", icon: Settings2 },
     { id: "apikeys", label: "API Keys", icon: Key },
-    { id: "rules", label: "Reglas Globales", icon: Shield },
+    { id: "rules", label: "Predeterminados", icon: Shield },
   ];
 
   if (isLoading) {
@@ -269,12 +269,12 @@ export default function SettingsPage() {
             <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
               <div className="bg-amber-500/10 border border-amber-500/20 text-amber-500 p-4 rounded-lg flex gap-3 text-sm">
                 <Bot className="shrink-0 mt-0.5" size={16} />
-                <p>Las reglas globales se añaden automáticamente a las instrucciones de <strong>todos</strong> tus agentes. Úsalas para imponer protocolos de seguridad y estándares de comportamiento comunes.</p>
+                <p>Los predeterminados se añaden automáticamente a las instrucciones de <strong>todos</strong> tus agentes. Úsalos para imponer protocolos de seguridad y estándares de comportamiento comunes.</p>
               </div>
 
               <div className="space-y-8">
                 <div>
-                  <label className="text-base font-semibold block mb-1">Reglas Globales</label>
+                  <label className="text-base font-semibold block mb-1">Predeterminados</label>
                   <p className="text-sm text-muted-foreground mb-4">¿Qué directivas deben heredar todos los agentes por defecto? Las reglas de seguridad maestro no se pueden desactivar.</p>
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
