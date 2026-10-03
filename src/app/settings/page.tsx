@@ -316,14 +316,91 @@ export default function SettingsPage() {
                   </div>
                 </div>
 
-                <div>
-                  <label className="text-sm font-semibold block mb-2">Otras reglas personalizadas:</label>
-                  <textarea 
-                    value={settings.globalBehaviorRules}
-                    onChange={(e) => setSettings({...settings, globalBehaviorRules: e.target.value})}
-                    placeholder="- Opcional: Escribe aquí cualquier otra regla específica de tu negocio..."
-                    className="w-full h-24 bg-secondary/50 border border-border rounded-md px-3 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-primary resize-y"
-                  />
+                <div className="mt-8 border-t border-border pt-6">
+                  <label className="text-sm font-semibold block mb-4">Otras reglas personalizadas (Predeterminados):</label>
+                  
+                  <div className="space-y-2 mb-4">
+                    {(!settings.customOptionalRules || settings.customOptionalRules.length === 0) && (
+                      <p className="text-sm text-muted-foreground italic">No hay reglas personalizadas.</p>
+                    )}
+                    {settings.customOptionalRules && settings.customOptionalRules.map((rule, idx) => (
+                      <div key={`custom-${idx}`} className="flex items-start gap-3 p-3 rounded-lg border border-border bg-secondary/10">
+                        {editingRuleIdx === idx ? (
+                          <div className="flex-1 flex flex-wrap gap-2">
+                            <input 
+                              type="text" 
+                              value={editingRuleText} 
+                              onChange={(e) => setEditingRuleText(e.target.value)}
+                              className="flex-1 bg-background border border-border rounded-md px-3 py-1.5 text-sm focus:outline-none focus:border-primary min-w-[200px]"
+                              autoFocus
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                  const newList = [...settings.customOptionalRules];
+                                  newList[idx] = editingRuleText;
+                                  setSettings({...settings, customOptionalRules: newList});
+                                  setEditingRuleIdx(null);
+                                } else if (e.key === 'Escape') {
+                                  setEditingRuleIdx(null);
+                                }
+                              }}
+                            />
+                            <div className="flex gap-1">
+                              <button type="button" onClick={() => {
+                                  const newList = [...settings.customOptionalRules];
+                                  newList[idx] = editingRuleText;
+                                  setSettings({...settings, customOptionalRules: newList});
+                                  setEditingRuleIdx(null);
+                                }} className="bg-primary text-primary-foreground px-3 py-1.5 rounded-md text-sm font-medium">Guardar</button>
+                              <button type="button" onClick={() => setEditingRuleIdx(null)} className="bg-secondary text-foreground px-3 py-1.5 rounded-md text-sm border border-border">Cancelar</button>
+                            </div>
+                          </div>
+                        ) : (
+                          <>
+                            <div className="mt-0.5 shrink-0 text-emerald-500"><Check size={18} /></div>
+                            <span className="text-sm text-foreground flex-1">{rule}</span>
+                            <div className="flex gap-1 shrink-0">
+                              <button type="button" onClick={() => {
+                                setEditingRuleIdx(idx);
+                                setEditingRuleText(rule);
+                              }} className="p-1.5 text-muted-foreground hover:text-primary transition-colors">
+                                <Pencil size={14} />
+                              </button>
+                              <button type="button" onClick={() => removeCustomRule(rule)} className="p-1.5 text-muted-foreground hover:text-red-500 transition-colors">
+                                <Trash size={14} />
+                              </button>
+                            </div>
+                          </>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                  
+                  <div className="flex flex-col sm:flex-row gap-2">
+                    <input 
+                      type="text" 
+                      value={newCustomRule} 
+                      onChange={e => setNewCustomRule(e.target.value)} 
+                      onKeyDown={e => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          if (newCustomRule.trim()) {
+                            setSettings({...settings, customOptionalRules: [...(settings.customOptionalRules || []), newCustomRule.trim()]});
+                            setNewCustomRule("");
+                          }
+                        }
+                      }} 
+                      placeholder="Agregar nuevo predeterminado..." 
+                      className="flex-1 bg-background border border-border rounded-md px-3 py-2 text-sm focus:outline-none focus:border-primary" 
+                    />
+                    <button type="button" onClick={() => {
+                      if (newCustomRule.trim()) {
+                        setSettings({...settings, customOptionalRules: [...(settings.customOptionalRules || []), newCustomRule.trim()]});
+                        setNewCustomRule("");
+                      }
+                    }} className="bg-primary text-primary-foreground px-4 py-2 rounded-md text-sm font-medium flex items-center justify-center gap-2">
+                      <Plus size={16}/> Agregar
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
