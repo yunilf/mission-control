@@ -614,22 +614,22 @@ const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
                               const val = e.target.value;
                               await updateDoc(doc(db, "agents", selectedAgent.id), { aiModel: val });
                           }}
-                          className="bg-transparent border-b border-dashed border-muted-foreground/50 text-foreground font-medium cursor-pointer focus:outline-none focus:border-primary pb-0.5 ml-1"
+                          className="bg-secondary border border-border rounded-md px-2 py-1 text-xs text-foreground font-medium cursor-pointer focus:outline-none focus:ring-1 focus:ring-primary ml-2 max-w-[220px] truncate"
                         >
-                          <optgroup label="Google Gemini 2.5">
+                          <optgroup label="Google Gemini 2.5" className="bg-background text-foreground">
                             <option value="google/gemini-2.5-flash">Gemini 2.5 Flash</option>
                             <option value="google/gemini-2.5-pro">Gemini 2.5 Pro</option>
                           </optgroup>
-                          <optgroup label="Google Gemini 1.5">
+                          <optgroup label="Google Gemini 1.5" className="bg-background text-foreground">
                             <option value="google/gemini-1.5-flash">Gemini 1.5 Flash</option>
                             <option value="google/gemini-1.5-pro">Gemini 1.5 Pro</option>
                             <option value="google/gemini-1.5-flash-8b">Gemini 1.5 Flash-8B</option>
                           </optgroup>
-                          <optgroup label="Open-Source (Llama)">
+                          <optgroup label="Open-Source (Llama)" className="bg-background text-foreground">
                             <option value="meta-llama/llama-3-70b-instruct">Llama 3 70B</option>
                             <option value="meta-llama/llama-3-8b-instruct">Llama 3 8B</option>
                           </optgroup>
-                          <optgroup label="OpenAI / Claude">
+                          <optgroup label="OpenAI / Claude" className="bg-background text-foreground">
                             <option value="gpt-4o">OpenAI GPT-4o</option>
                             <option value="gpt-4o-mini">OpenAI GPT-4o Mini</option>
                             <option value="claude-3-5-sonnet-20240620">Claude 3.5 Sonnet</option>
@@ -1671,16 +1671,16 @@ const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
                               <div>
                   <label className="text-sm font-medium block mb-1">Modelo de IA</label>
                   <select value={newSubagentModel} onChange={e => setNewSubagentModel(e.target.value)} className="w-full bg-background border border-border rounded-md px-3 py-2 text-sm focus:ring-1 focus:ring-primary focus:outline-none">
-                      <optgroup label="Google Gemini 2.5">
+                      <optgroup label="Google Gemini 2.5" className="bg-background text-foreground">
                         <option value="google/gemini-2.5-flash">Gemini 2.5 Flash</option>
                         <option value="google/gemini-2.5-pro">Gemini 2.5 Pro</option>
                       </optgroup>
-                      <optgroup label="Google Gemini 1.5">
+                      <optgroup label="Google Gemini 1.5" className="bg-background text-foreground">
                         <option value="google/gemini-1.5-flash">Gemini 1.5 Flash</option>
                         <option value="google/gemini-1.5-pro">Gemini 1.5 Pro</option>
                         <option value="google/gemini-1.5-flash-8b">Gemini 1.5 Flash-8B</option>
                       </optgroup>
-                      <optgroup label="Open-Source (Llama)">
+                      <optgroup label="Open-Source (Llama)" className="bg-background text-foreground">
                         <option value="meta-llama/llama-3-70b-instruct">Llama 3 70B</option>
                         <option value="meta-llama/llama-3-8b-instruct">Llama 3 8B</option>
                       </optgroup>
