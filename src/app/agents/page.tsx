@@ -575,16 +575,16 @@ const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         {selectedAgent ? (
           <div className="flex-1 bg-card border border-border rounded-xl shadow-sm flex flex-col overflow-hidden">
             {/* Header */}
-            <div className="p-6 border-b border-border flex flex-col xl:flex-row xl:items-center justify-between bg-gradient-to-r from-secondary/20 to-transparent gap-6">
+            <div className="p-4 sm:p-6 border-b border-border flex flex-col xl:flex-row xl:items-center justify-between bg-gradient-to-r from-secondary/20 to-transparent gap-4 sm:gap-6">
               
-              <div className="flex flex-wrap items-center justify-between xl:justify-start gap-8 flex-1">
+              <div className="flex flex-col sm:flex-row sm:flex-wrap sm:items-center justify-between xl:justify-start gap-4 sm:gap-8 flex-1 min-w-0">
                 {/* Left: Avatar & Name */}
-                <div className="flex items-start gap-4">
-                  <div className={`w-16 h-16 rounded-xl flex items-center justify-center border flex-shrink-0 ${selectedAgent.status === 'online' ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-500' : 'bg-zinc-500/10 border-zinc-500/30 text-zinc-500'}`}>
+                <div className="flex items-center sm:items-start gap-3 sm:gap-4 min-w-0">
+                  <div className={`w-12 h-12 sm:w-16 sm:h-16 rounded-xl flex items-center justify-center border flex-shrink-0 ${selectedAgent.status === 'online' ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-500' : 'bg-zinc-500/10 border-zinc-500/30 text-zinc-500'}`}>
                     <Bot size={32} />
                   </div>
-                  <div className="flex flex-col items-start gap-1">
-                    <h2 className="text-2xl font-bold">{selectedAgent.name}</h2>
+                  <div className="flex flex-col items-start gap-1 min-w-0">
+                    <h2 className="text-xl sm:text-2xl font-bold break-words">{selectedAgent.name}</h2>
                     {selectedAgent.status === 'online' ? (
                       <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 text-[10px] font-bold uppercase tracking-wider flex items-center gap-1.5 w-fit">
                         <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> ACTIVO
@@ -598,15 +598,15 @@ const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
                 </div>
 
                 {/* Middle: 2x2 Grid */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-2 border border-border bg-secondary/10 rounded-lg p-3 xl:ml-8 flex-1 max-w-2xl">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-2 border border-border bg-secondary/10 rounded-lg p-3 xl:ml-8 flex-1 w-full sm:w-auto min-w-0 max-w-2xl">
                   {/* Left Column */}
-                  <div className="flex flex-col gap-2">
-                    <span className="text-muted-foreground flex items-center gap-2 text-sm">
+                  <div className="flex flex-col gap-2 min-w-0">
+                    <span className="text-muted-foreground flex items-center gap-2 text-sm min-w-0">
                       <ShieldCheck size={14} className="text-blue-500" />
-                      ID: <span className="text-foreground">{selectedAgent.id}</span>
+                      ID: <span className="text-foreground truncate">{selectedAgent.id}</span>
                     </span>
-                    <span className="text-muted-foreground flex items-center gap-2 text-sm">
-                      <Sparkles size={14} className="text-purple-500" />
+                    <span className="text-muted-foreground flex items-center gap-2 text-sm min-w-0">
+                      <Sparkles size={14} className="text-purple-500 shrink-0" />
                       Modelo: 
                         <select 
                           value={selectedAgent.aiModel || "google/gemini-2.5-flash"}
@@ -614,7 +614,7 @@ const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
                               const val = e.target.value;
                               await updateDoc(doc(db, "agents", selectedAgent.id), { aiModel: val });
                           }}
-                          className="bg-secondary border border-border rounded-md px-2 py-1 text-xs text-foreground font-medium cursor-pointer focus:outline-none focus:ring-1 focus:ring-primary ml-2 max-w-[220px] truncate"
+                          className="bg-secondary border border-border rounded-md px-2 py-1 text-xs text-foreground font-medium cursor-pointer focus:outline-none focus:ring-1 focus:ring-primary flex-1 min-w-0 sm:flex-none sm:max-w-[220px] truncate"
                         >
                           <optgroup label="Google Gemini 2.5" className="bg-background text-foreground">
                             <option value="google/gemini-2.5-flash">Gemini 2.5 Flash</option>
@@ -639,9 +639,9 @@ const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
                   </div>
                   
                   {/* Right Column */}
-                  <div className="flex flex-col gap-2">
-                    <span className="text-muted-foreground flex items-center gap-2 text-sm">
-                      <User size={14} className="text-primary" />
+                  <div className="flex flex-col gap-2 min-w-0">
+                    <span className="text-muted-foreground flex flex-wrap items-center gap-x-2 gap-y-0.5 text-sm">
+                      <User size={14} className="text-primary shrink-0" />
                       Cliente asignado: {clients.find(c => c.id === selectedAgent.clientId)?.name || <span className="italic opacity-50">Ninguno</span>}
                     </span>
                     
@@ -682,9 +682,9 @@ const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
               </div>
 
               {/* Right: Toggle Switch */}
-              <div className="flex items-center gap-4 xl:justify-end shrink-0">
-                <div className="flex flex-col items-end">
-                  <span className="text-xs text-muted-foreground mb-1 font-medium">Encender / Apagar Nodo</span>
+              <div className="flex items-center gap-4 xl:justify-end shrink-0 w-full xl:w-auto">
+                <div className="flex flex-row xl:flex-col items-center xl:items-end justify-between w-full xl:w-auto gap-3">
+                  <span className="text-xs text-muted-foreground xl:mb-1 font-medium">Encender / Apagar Nodo</span>
                   <label className="relative inline-flex items-center cursor-pointer">
                     <input type="checkbox" className="sr-only peer" checked={selectedAgent.status === 'online'} onChange={() => toggleStatus(selectedAgent)} />
                     <div className="w-14 h-7 bg-zinc-600 rounded-full peer peer-checked:after:translate-x-full peer-checked:bg-emerald-500 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all shadow-inner"></div>
@@ -696,7 +696,7 @@ const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
             </div>
 
             {/* Tabs */}
-            <div className="flex items-center gap-6 px-6 border-b border-border bg-background overflow-x-auto custom-scrollbar">
+            <div className="flex items-center gap-4 sm:gap-6 px-4 sm:px-6 border-b border-border bg-background overflow-x-auto custom-scrollbar shrink-0">
               <button onClick={() => setActiveTab('monitor')} className={`py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${activeTab === 'monitor' ? 'border-primary text-foreground' : 'border-transparent text-muted-foreground hover:text-foreground'}`}>
                 Inicio
               </button>
@@ -725,7 +725,7 @@ const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
             </div>
 
             {/* Tab Content */}
-            <div className="flex-1 overflow-y-auto p-6 bg-background">
+            <div className="flex-1 overflow-y-auto p-4 sm:p-6 bg-background">
               
               {activeTab === 'monitor' && (
                 <div className="space-y-6">
