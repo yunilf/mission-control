@@ -767,22 +767,9 @@ const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
                 </div>
               )}
 
-
-            </div>
-          </div>
-        ) : (
-          <div className="flex-1 bg-card border border-border rounded-xl shadow-sm flex flex-col items-center justify-center text-muted-foreground p-6">
-            <Bot size={48} className="mb-4 opacity-20" />
-            <h3 className="text-lg font-medium">Ningún agente seleccionado</h3>
-            <p className="text-sm text-center max-w-sm mt-2">Selecciona un agente de la lista en el panel superior para ver sus métricas de rendimiento y logs en tiempo real.</p>
-          </div>
-        )}
-      </div>
-
-      
-                            {activeTab === 'identidad' && editingAgent && (
-                <div className="h-full overflow-y-auto p-6 space-y-8 pb-24">
-                  <div className="bg-card border border-border rounded-xl p-6 shadow-sm">
+{activeTab === 'identidad' && editingAgent && (
+                <div className="space-y-6">
+                  <div className="bg-card border border-border rounded-lg p-6">
                     <h3 className="text-lg font-semibold border-b border-border pb-3 mb-5">Nombre y Cliente</h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div>
@@ -802,7 +789,7 @@ const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
                   </div>
 
                   <div className="space-y-8">
-                    <div className="bg-card border border-border rounded-xl p-6 shadow-sm">
+                    <div className="bg-card border border-border rounded-lg p-6">
                       <h3 className="text-lg font-semibold border-b border-border pb-3 mb-5 flex items-center justify-between">
                         Identidad y Personalidad
                         <span className="text-xs font-normal text-muted-foreground">IDENTITY.md</span>
@@ -852,8 +839,8 @@ const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
               )}
 
                             {activeTab === 'tareas' && editingAgent && (
-                <div className="h-full overflow-y-auto p-6 pb-24">
-                  <div className="bg-card border border-border rounded-xl p-6 shadow-sm max-w-4xl mx-auto">
+                <div className="space-y-6">
+                  <div className="bg-card border border-border rounded-lg p-6 ">
                     <h3 className="text-lg font-semibold border-b border-border pb-3 mb-5 flex items-center justify-between">
                       Directivas (Tareas y Reglas)
                       <span className="text-xs font-normal text-muted-foreground">SOUL.md</span>
@@ -949,8 +936,8 @@ const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
               )}
 
               {activeTab === 'conocimiento' && editingAgent && (
-                <div className="h-full overflow-y-auto p-6 pb-24">
-                  <div className="bg-card border border-border rounded-xl p-6 shadow-sm max-w-4xl mx-auto">
+                <div className="space-y-6">
+                  <div className="bg-card border border-border rounded-lg p-6 ">
                     <h3 className="text-lg font-semibold border-b border-border pb-3 mb-5">Base de Conocimiento</h3>
                     <div className="space-y-6">
                       <div className="bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20 p-3 rounded-md text-xs">
@@ -1045,8 +1032,8 @@ const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
               )}
 
               {activeTab === 'canales' && editingAgent && (
-                <div className="h-full overflow-y-auto p-6 pb-24">
-                  <div className="bg-card border border-border rounded-xl p-6 shadow-sm max-w-4xl mx-auto">
+                <div className="space-y-6">
+                  <div className="bg-card border border-border rounded-lg p-6 ">
                     <h3 className="text-lg font-semibold border-b border-border pb-3 mb-5">Canales de Comunicación</h3>
                     <div className="space-y-4">
                       <p className="text-sm text-muted-foreground mb-4">Vincular agente con canales de mensajería externos.</p>
@@ -1109,8 +1096,8 @@ const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
               )}
 
               {activeTab === 'integraciones' && editingAgent && (
-                <div className="h-full overflow-y-auto p-6 pb-24">
-                  <div className="bg-card border border-border rounded-xl p-6 shadow-sm max-w-4xl mx-auto">
+                <div className="space-y-6">
+                  <div className="bg-card border border-border rounded-lg p-6 ">
                     <h3 className="text-lg font-semibold border-b border-border pb-3 mb-5">Integraciones y Plugins</h3>
                     <div className="space-y-4">
                       <p className="text-sm text-muted-foreground mb-4">Habilita herramientas externas (Plugins) para que el agente ejecute acciones.</p>
@@ -1160,7 +1147,22 @@ const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
                 </div>
               )}
 
-              {/* Floating Save Button if changes are made */}
+              
+
+
+            </div>
+          </div>
+        ) : (
+          <div className="flex-1 bg-card border border-border rounded-xl shadow-sm flex flex-col items-center justify-center text-muted-foreground p-6">
+            <Bot size={48} className="mb-4 opacity-20" />
+            <h3 className="text-lg font-medium">Ningún agente seleccionado</h3>
+            <p className="text-sm text-center max-w-sm mt-2">Selecciona un agente de la lista en el panel superior para ver sus métricas de rendimiento y logs en tiempo real.</p>
+          </div>
+        )}
+      </div>
+
+      
+                            {/* Floating Save Button if changes are made */}
               {editingAgent && hasChanges && (
                 <div className="absolute bottom-6 right-6 z-10 animate-in slide-in-from-bottom-4">
                   <div className="bg-card border border-primary/20 shadow-xl rounded-full px-6 py-3 flex items-center gap-4">
