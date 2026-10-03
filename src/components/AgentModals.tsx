@@ -1,15 +1,23 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { collection, addDoc } from "firebase/firestore";
+import { collection, addDoc, onSnapshot } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-import { Bot, Plus, X } from "lucide-react";
+import { Bot, X } from "lucide-react";
 
 export default function AgentModals() {
   const [showAddModal, setShowAddModal] = useState(false);
-  const [newAgentName, setNewAgentName] = useState("");
+  const [selectedClientId, setSelectedClientId] = useState("");
+  const [clients, setClients] = useState<any[]>([]);
   const [newAgentRole, setNewAgentRole] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    const unsubClients = onSnapshot(collection(db, "clients"), (snapshot) => {
+      setClients(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+    });
+    return () => unsubClients();
+  }, []);
 
   useEffect(() => {
     const handleOpenAdd = () => setShowAddModal(true);
@@ -19,14 +27,20 @@ export default function AgentModals() {
     };
   }, []);
 
+  // Compute name based on selected client
+  const selectedClient = clients.find(c => c.id === selectedClientId);
+  const computedName = selectedClient 
+    ? `yunAi ${selectedClient.company || selectedClient.name}`
+    : "yunAi";
+
   const handleAddAgent = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newAgentName.trim()) return;
     
     setIsSubmitting(true);
     try {
       const docRef = await addDoc(collection(db, "agents"), {
-        name: newAgentName,
+        name: computedName,
+        clientId: selectedClientId || null,
         role: newAgentRole || "Asistente General",
         status: "offline",
         aiModel: "google/gemini-2.5-flash",
@@ -41,10 +55,10 @@ export default function AgentModals() {
       });
       
       await addDoc(collection(db, "logs"), {
-        agent: "Sistema", action: `Nuevo agente registrado: ${newAgentName}`, isError: false, timestamp: new Date().toISOString()
+        agent: "Sistema", action: `Nuevo agente registrado: ${computedName}`, isError: false, timestamp: new Date().toISOString()
       });
       
-      setNewAgentName("");
+      setSelectedClientId("");
       setNewAgentRole("");
       setShowAddModal(false);
     } catch (error: any) {
@@ -67,12 +81,28 @@ export default function AgentModals() {
         </div>
         <div className="p-6">
           <h3 className="text-xl font-semibold mb-1">Agregar Nuevo Agente</h3>
-          <p className="text-sm text-muted-foreground mb-6">Ingresa los detalles básicos para registrar el agente.</p>
+          <p className="text-sm text-muted-foreground mb-6">Asigna un cliente para registrar a yunAi.</p>
           
           <form onSubmit={handleAddAgent} className="space-y-4">
             <div className="space-y-2">
-              <label className="text-sm font-medium">Nombre del Agente</label>
-              <input type="text" value={newAgentName} onChange={e => setNewAgentName(e.target.value)} placeholder="ej. Asistente Ventas" className="w-full bg-background border border-border rounded-md px-3 py-2 text-sm focus:outline-none focus:border-primary" required />
+              <label className="text-sm font-medium">Cliente Asignado</label>
+              <select 
+                value={selectedClientId} 
+                onChange={e => setSelectedClientId(e.target.value)} 
+                className="w-full bg-background border border-border rounded-md px-3 py-2 text-sm focus:outline-none focus:border-primary"
+                required
+              >
+                <option value="">-- Selecciona un cliente --</option>
+                {clients.map(client => (
+                  <option key={client.id} value={client.id}>
+                    {client.name} {client.company ? `(${client.company})` : ''}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Nombre del Agente (Automático)</label>
+              <input type="text" value={computedName} disabled className="w-full bg-secondary/50 border border-border rounded-md px-3 py-2 text-sm text-muted-foreground" />
             </div>
             <div className="space-y-2">
               <label className="text-sm font-medium">Rol o Especialidad</label>
