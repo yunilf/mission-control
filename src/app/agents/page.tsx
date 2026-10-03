@@ -797,40 +797,53 @@ const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
                       <div className="space-y-3">
                         {selectedAgent.subagents && selectedAgent.subagents.length > 0 ? (
                           selectedAgent.subagents.map((sub: any, i: number) => (
-                            <div key={i} className="bg-background border border-border rounded-md p-3 flex justify-between items-center">
-                               <div className="flex items-center gap-3">
-                                 <div className="w-8 h-8 rounded bg-primary/10 text-primary flex items-center justify-center">
-                                   <Bot size={16} />
+                            <div key={i} className="bg-background border border-border rounded-md p-4 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                               <div className="flex items-center gap-4 lg:w-1/4 shrink-0">
+                                 <div className="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                                   <Bot size={20} />
                                  </div>
-                                 <div>
-                                   <div className="text-sm font-medium capitalize">{sub.name}</div>
-                                   <div className="text-xs text-muted-foreground line-clamp-1">{sub.mission ? sub.mission : (sub.model || 'google/gemini-2.5-flash')}</div>
+                                 <div className="min-w-0">
+                                   <div className="text-sm font-bold capitalize text-foreground truncate">{sub.name}</div>
+                                   <div className="text-xs text-muted-foreground mt-1 flex items-center gap-1.5 truncate" title={sub.model || 'google/gemini-2.5-flash'}>
+                                     <Sparkles size={12} className="text-purple-400 shrink-0"/> {sub.model || 'google/gemini-2.5-flash'}
+                                   </div>
                                  </div>
                                </div>
-                                                              <div className="flex items-center gap-3">
-                                 <button className="text-xs text-blue-500 hover:text-blue-400" onClick={() => {
-                                   setNewSubagentName(sub.name);
-                                   setNewSubagentMission(sub.mission || '');
-                                   setNewSubagentModel(sub.model || 'google/gemini-2.5-flash');
-                                   setEditingSubagentIndex(i);
-                                   // Check if mission is custom
-                                   if (sub.mission && !dutiesList.includes(sub.mission)) {
-                                     setIsCustomMission(true);
-                                   } else {
-                                     setIsCustomMission(false);
-                                   }
-                                   setShowSubagentModal(true);
-                                 }}>
-                                   Editar
-                                 </button>
-                                 <button className="text-xs text-red-500 hover:text-red-400" onClick={async () => {
-                                   if (confirm('¿Eliminar este sub-agente?')) {
-                                     const filtered = selectedAgent.subagents.filter((_: any, index: number) => index !== i);
-                                     await updateDoc(doc(db, "agents", selectedAgent.id), { subagents: filtered });
-                                   }
-                                 }}>
-                                   Eliminar
-                                 </button>
+                               
+                               <div className="flex-1 lg:px-6 lg:border-l lg:border-border/50 min-w-0">
+                                 <div className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1">Misión / Deberes</div>
+                                 <div className="text-xs text-foreground line-clamp-2" title={sub.mission || 'Sin misión asignada'}>{sub.mission || 'Sin misión asignada'}</div>
+                               </div>
+
+                               <div className="lg:w-1/4 flex items-center justify-between lg:justify-end gap-6 lg:border-l lg:border-border/50 lg:pl-6 shrink-0">
+                                 <div className="flex flex-col">
+                                   <span className="text-[10px] text-muted-foreground uppercase tracking-wider mb-1">Tokens</span>
+                                   <span className="text-sm font-mono font-medium text-emerald-400">{sub.tokensUsed || '0'}</span>
+                                 </div>
+                                 <div className="flex items-center gap-2">
+                                   <button className="p-2 text-blue-500 hover:text-blue-400 hover:bg-blue-500/10 rounded-md transition-colors" title="Editar" onClick={() => {
+                                     setNewSubagentName(sub.name);
+                                     setNewSubagentMission(sub.mission || '');
+                                     setNewSubagentModel(sub.model || 'google/gemini-2.5-flash');
+                                     setEditingSubagentIndex(i);
+                                     if (sub.mission && !dutiesList.includes(sub.mission)) {
+                                       setIsCustomMission(true);
+                                     } else {
+                                       setIsCustomMission(false);
+                                     }
+                                     setShowSubagentModal(true);
+                                   }}>
+                                     <Settings2 size={16}/>
+                                   </button>
+                                   <button className="p-2 text-red-500 hover:text-red-400 hover:bg-red-500/10 rounded-md transition-colors" title="Eliminar" onClick={async () => {
+                                     if (confirm('¿Eliminar este sub-agente?')) {
+                                       const filtered = selectedAgent.subagents.filter((_: any, index: number) => index !== i);
+                                       await updateDoc(doc(db, "agents", selectedAgent.id), { subagents: filtered });
+                                     }
+                                   }}>
+                                     <Trash size={16}/>
+                                   </button>
+                                 </div>
                                </div>
                             </div>
                           ))
