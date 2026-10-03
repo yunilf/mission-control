@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Save, Key, Shield, Settings2, Palette, Loader2, Bot, Check, Square, Lock, Plus, Trash } from "lucide-react";
+import { Save, Key, Shield, Settings2, Palette, Loader2, Bot, Check, Square, Lock, Plus, Trash, Pencil } from "lucide-react";
 import { db } from "@/lib/firebase";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 
@@ -35,6 +35,8 @@ export default function SettingsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [newCustomRule, setNewCustomRule] = useState("");
+  const [editingRuleIdx, setEditingRuleIdx] = useState<number | null>(null);
+  const [editingRuleText, setEditingRuleText] = useState("");
   
   const [settings, setSettings] = useState({
     agencyName: "yunAi.agent",
