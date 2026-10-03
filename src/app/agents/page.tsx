@@ -1,10 +1,10 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { collection, onSnapshot, doc, updateDoc } from "firebase/firestore";
+import { collection, onSnapshot, doc, updateDoc, setDoc } from "firebase/firestore";
 import { db, storage } from "@/lib/firebase";
 import { ref, uploadBytesResumable, getDownloadURL, deleteObject } from "firebase/storage";
-import { Bot, Activity, Terminal, Cpu, MemoryStick, Play, Square, Settings2, ShieldCheck, Clock, Plus, Power, Sparkles, X, User, FileText, Blocks, MessageSquare } from "lucide-react";
+import { Bot, Activity, Terminal, Cpu, MemoryStick, Play, Square, Settings2, ShieldCheck, Clock, Plus, Power, Sparkles, X, User, FileText, Blocks, MessageSquare, Trash } from "lucide-react";
 
 export default function AgentsFleetPage() {
   const [agents, setAgents] = useState<any[]>([]);
@@ -14,6 +14,11 @@ export default function AgentsFleetPage() {
   const [showSubagentModal, setShowSubagentModal] = useState(false);
   const [newSubagentName, setNewSubagentName] = useState('');
   const [newSubagentMission, setNewSubagentMission] = useState('');
+  const [dutiesList, setDutiesList] = useState<string[]>([]);
+  const [isEditingDuties, setIsEditingDuties] = useState(false);
+  const [isCustomMission, setIsCustomMission] = useState(false);
+  const [newDutyTemp, setNewDutyTemp] = useState('');
+
   const [editingAgent, setEditingAgent] = useState<any>(null);
   const [customIdentityFields, setCustomIdentityFields] = useState({ role: false, tone: false, audience: false, greeting: false });
   const [customSoulFields, setCustomSoulFields] = useState({ objective: false, pricing: false, handoff: false, style: false });
@@ -31,6 +36,45 @@ export default function AgentsFleetPage() {
     "[10:45:04] SUCCESS: Sincronización completada.",
     "[10:45:10] EVENT: Escuchando eventos entrantes..."
   ]);
+
+  
+  useEffect(() => {
+    const unsubDuties = onSnapshot(doc(db, "settings", "duties"), (docSnap) => {
+      if (docSnap.exists() && docSnap.data().list) {
+        setDutiesList(docSnap.data().list);
+      } else {
+        setDutiesList([
+          "Investigador de internet",
+          "Generador de código",
+          "Analista de datos",
+          "Soporte técnico"
+        ]);
+      }
+    });
+    return () => unsubDuties();
+  }, []);
+
+  const handleAddDuty = async () => {
+    if (!newDutyTemp.trim()) return;
+    const newList = [...dutiesList, newDutyTemp.trim()];
+    setDutiesList(newList);
+    setNewDutyTemp('');
+    try {
+      await setDoc(doc(db, "settings", "duties"), { list: newList });
+    } catch(e) {
+      console.error(e);
+    }
+  };
+
+  const handleRemoveDuty = async (index: number) => {
+    const newList = dutiesList.filter((_, i) => i !== index);
+    setDutiesList(newList);
+    try {
+      await setDoc(doc(db, "settings", "duties"), { list: newList });
+    } catch(e) {
+      console.error(e);
+    }
+  };
 
   useEffect(() => {
     const unsubAgents = onSnapshot(collection(db, "agents"), (snapshot) => {
@@ -1185,7 +1229,7 @@ const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
           <div className="bg-card border border-border w-full max-w-md rounded-xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
             <div className="p-5 border-b border-border bg-secondary/20 flex justify-between items-center">
               <h3 className="font-bold flex items-center gap-2"><Bot className="text-primary" size={18}/> Nuevo Sub-agente</h3>
-              <button onClick={() => setShowSubagentModal(false)} className="text-muted-foreground hover:text-foreground">
+              <button type="button" onClick={() => { setShowSubagentModal(false); setIsCustomMission(false); setIsEditingDuties(false); }} className="text-muted-foreground hover:text-foreground">
                 <X size={18} />
               </button>
             </div>
@@ -1194,12 +1238,71 @@ const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
                 <label className="text-sm font-medium block mb-1">Nombre del Sub-agente</label>
                 <input type="text" value={newSubagentName} onChange={e => setNewSubagentName(e.target.value)} placeholder="Ej. investigador_web" className="w-full bg-background border border-border rounded-md px-3 py-2 text-sm focus:ring-1 focus:ring-primary focus:outline-none" required />
               </div>
-              <div>
-                <label className="text-sm font-medium block mb-1">Misión (Deberes)</label>
-                <textarea value={newSubagentMission} onChange={e => setNewSubagentMission(e.target.value)} placeholder="Ej. Eres responsable de buscar información en internet sobre los competidores..." className="w-full bg-background border border-border rounded-md px-3 py-2 text-sm h-32 resize-none focus:ring-1 focus:ring-primary focus:outline-none" required />
-              </div>
+                              <div>
+                  <div className="flex justify-between items-center mb-1">
+                    <label className="text-sm font-medium">Misión (Deberes)</label>
+                    <button type="button" onClick={() => setIsEditingDuties(!isEditingDuties)} className="text-xs text-primary hover:underline">
+                      {isEditingDuties ? "Cerrar edición" : "Administrar lista"}
+                    </button>
+                  </div>
+                  
+                  {isEditingDuties ? (
+                    <div className="border border-border rounded-md p-3 space-y-3 bg-secondary/10">
+                      <div className="space-y-2 max-h-40 overflow-y-auto pr-2 custom-scrollbar">
+                        {dutiesList.length === 0 && <p className="text-xs text-muted-foreground italic">Lista vacía</p>}
+                        {dutiesList.map((duty, idx) => (
+                          <div key={idx} className="flex gap-2 items-center bg-background border border-border rounded p-2">
+                            <span className="flex-1 text-sm">{duty}</span>
+                            <button type="button" onClick={() => handleRemoveDuty(idx)} className="text-red-500 hover:text-red-400 p-1">
+                              <Trash size={14}/>
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                      <div className="flex gap-2">
+                        <input type="text" value={newDutyTemp} onChange={e => setNewDutyTemp(e.target.value)} placeholder="Nuevo deber..." className="flex-1 bg-background border border-border rounded-md px-3 py-1.5 text-sm focus:outline-none focus:border-primary" />
+                        <button type="button" onClick={handleAddDuty} className="bg-primary text-primary-foreground px-3 py-1.5 rounded-md text-sm font-medium">Agregar</button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      {!isCustomMission ? (
+                        <select 
+                          value={newSubagentMission} 
+                          onChange={e => {
+                            if (e.target.value === 'CUSTOM') {
+                              setIsCustomMission(true);
+                              setNewSubagentMission('');
+                            } else {
+                              setNewSubagentMission(e.target.value);
+                            }
+                          }} 
+                          className="w-full bg-background border border-border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary focus:bg-secondary transition-colors"
+                          required
+                        >
+                          <option value="">-- Selecciona un deber --</option>
+                          {dutiesList.map(d => <option key={d} value={d}>{d}</option>)}
+                          <option value="CUSTOM">Escribir algo personalizado...</option>
+                        </select>
+                      ) : (
+                        <div className="space-y-2">
+                          <textarea 
+                            value={newSubagentMission} 
+                            onChange={e => setNewSubagentMission(e.target.value)} 
+                            placeholder="Escribe la misión personalizada aquí..." 
+                            className="w-full bg-background border border-border rounded-md px-3 py-2 text-sm h-32 resize-none focus:ring-1 focus:ring-primary focus:outline-none" 
+                            required 
+                          />
+                          <button type="button" onClick={() => { setIsCustomMission(false); setNewSubagentMission(''); }} className="text-xs text-primary hover:underline">
+                            Volver a la lista
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
               <div className="pt-2 flex justify-end gap-3">
-                <button type="button" onClick={() => setShowSubagentModal(false)} className="px-4 py-2 text-sm font-medium hover:bg-secondary rounded-md">Cancelar</button>
+                <button type="button" onClick={() => { setShowSubagentModal(false); setIsCustomMission(false); setIsEditingDuties(false); }} className="px-4 py-2 text-sm font-medium hover:bg-secondary rounded-md">Cancelar</button>
                 <button type="submit" disabled={isSavingSubagent} className="px-4 py-2 text-sm font-medium bg-primary text-primary-foreground rounded-md disabled:opacity-50">
                   {isSavingSubagent ? "Guardando..." : "Agregar Sub-agente"}
                 </button>
