@@ -1046,7 +1046,7 @@ const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
                               className="w-full h-20 bg-background border border-border rounded-md px-3 py-2 text-sm resize-none focus:outline-none focus:border-primary" 
                             />
                           </div>
-                        </div>
+                        </details>
   
                         {/* Vista previa oculta del MD generado (opcional) */}
                       <details className="mt-4">
