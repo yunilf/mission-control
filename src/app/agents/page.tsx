@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { collection, onSnapshot, doc, updateDoc, setDoc, getDoc } from "firebase/firestore";
 import { db, storage } from "@/lib/firebase";
 import { ref, uploadBytesResumable, getDownloadURL, deleteObject } from "firebase/storage";
-import { Bot, Activity, Terminal, Cpu, MemoryStick, Play, Square, Settings2, ShieldCheck, Clock, Plus, Power, Sparkles, X, User, FileText, Blocks, MessageSquare, Trash, Upload, Copy, Loader2, Smartphone, Check } from "lucide-react";
+import { Bot, Activity, Terminal, Cpu, MemoryStick, Play, Square, Settings2, ShieldCheck, Clock, Plus, Power, Sparkles, X, User, FileText, Blocks, MessageSquare, Trash, Upload, Copy, Loader2, Smartphone, Check, ChevronDown } from "lucide-react";
 
 export const STRICT_RULES_OPTIONS = [
   "Prohibido dar respuestas largas (Ser siempre breve y directo)",
@@ -1002,12 +1002,8 @@ const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
 
                         {renderIdentityField('greeting', '4. Ejemplo de Saludo Típico', 'Una frase que muestre cómo iniciaría una conversación este agente.', GREETING_OPTIONS, 'Ej. ¡Hola! Qué alegría saludarte, ¿en qué te puedo ayudar hoy? 😊')}
 
-                        <details className="group border border-border rounded-lg bg-secondary/10">
-                          <summary className="p-3 text-sm font-medium cursor-pointer list-none flex justify-between items-center hover:bg-secondary/20 transition-colors">
-                            <span>5. Reglas Globales y de Personalidad</span>
-                            <ChevronDown size={16} className="group-open:rotate-180 transition-transform text-muted-foreground" />
-                          </summary>
-                          <div className="p-4 border-t border-border">
+                        <div>
+                          <label className="text-sm font-medium">5. Reglas estrictas de Personalidad</label>
                             <p className="text-xs text-muted-foreground mb-3">¿Qué cosas NUNCA debe hacer el agente respecto a su forma de ser? Selecciona las directivas más importantes.</p>
                             
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mb-4">
@@ -1047,7 +1043,7 @@ const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
                               className="w-full h-20 bg-background border border-border rounded-md px-3 py-2 text-sm resize-none focus:outline-none focus:border-primary" 
                             />
                           </div>
-                        </details>
+                        </div>
   
                         {/* Vista previa oculta del MD generado (opcional) */}
                       <details className="mt-4">
