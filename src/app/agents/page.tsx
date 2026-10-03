@@ -21,7 +21,9 @@ export default function AgentsFleetPage() {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [newLinkUrl, setNewLinkUrl] = useState("");
   const [isSaving, setIsSaving] = useState(false);
+  const [hasChanges, setHasChanges] = useState(false);
   const [isSavingSubagent, setIsSavingSubagent] = useState(false);
+  const [pairingCode, setPairingCode] = useState("");
 
   const [mockLogs, setMockLogs] = useState<string[]>([
     "[10:45:02] INFO: Iniciando subsistema OpenClaw...",
@@ -66,6 +68,15 @@ export default function AgentsFleetPage() {
     }
   };
 
+  const handleToolToggle = (toolId: string) => {
+    if (!editingAgent) return;
+    const currentTools = editingAgent.tools || [];
+    const newTools = currentTools.includes(toolId) 
+      ? currentTools.filter((t: string) => t !== toolId)
+      : [...currentTools, toolId];
+    setEditingAgent({ ...editingAgent, tools: newTools });
+  };
+
   const handleSaveSubagent = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedAgent || !newSubagentName.trim() || !newSubagentMission.trim()) return;
@@ -105,6 +116,22 @@ export default function AgentsFleetPage() {
       setEditingAgent(selectedAgent);
     }
   }, [selectedAgent]);
+
+    useEffect(() => {
+    if (!selectedAgent || !editingAgent) return;
+    if (editingAgent.id !== selectedAgent.id) return;
+    
+    const keys = new Set([...Object.keys(editingAgent), ...Object.keys(selectedAgent)]);
+    let different = false;
+    for (let k of Array.from(keys)) {
+        // Ignorar campos que firebase agrega u ordena raro
+        if (JSON.stringify(editingAgent[k]) !== JSON.stringify(selectedAgent[k])) {
+            different = true;
+            break;
+        }
+    }
+    setHasChanges(different);
+  }, [editingAgent, selectedAgent]);
 
   const ROLE_OPTIONS = ["Asistente de Ventas", "Soporte Técnico", "Recepcionista", "Asesor Financiero"];
   const TONE_OPTIONS = ["Profesional y formal", "Amigable y cercano", "Entusiasta y persuasivo", "Directo y conciso"];
@@ -319,7 +346,7 @@ const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     }
   };
 
-  const handleSaveEdit = async () => {
+    const handleSaveEdit = async () => {
     if (!editingAgent) return;
     setIsSaving(true);
     try {
@@ -327,11 +354,15 @@ const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
         name: editingAgent.name,
         role: editingAgent.role,
         clientId: editingAgent.clientId || "",
-        identity: editingAgent.identity,
+        whatsappEnabled: editingAgent.whatsappEnabled || false,
+        whatsappNumber: editingAgent.whatsappNumber || "",
+        telegramEnabled: editingAgent.telegramEnabled || false,
+        identity: editingAgent.identity || "",
         identityData: editingAgent.identityData || {},
-        soul: editingAgent.soul,
+        soul: editingAgent.soul || "",
         soulData: editingAgent.soulData || {},
-        knowledgeBase: editingAgent.knowledgeBase || []
+        knowledgeBase: editingAgent.knowledgeBase || [],
+        tools: editingAgent.tools || []
       });
       alert("Cambios guardados exitosamente.");
     } catch (e: any) {
@@ -776,7 +807,94 @@ const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
                 <div className="h-full overflow-y-auto p-6 pb-24">
                   <div className="bg-card border border-border rounded-xl p-6 shadow-sm max-w-4xl mx-auto">
                     <h3 className="text-lg font-semibold border-b border-border pb-3 mb-5">Base de Conocimiento</h3>
-                    /* NOT FOUND */
+                    <div className="space-y-6">
+                      <div className="bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20 p-3 rounded-md text-xs">
+                        Agrega documentos (PDF, DOC, CSV, MD) o enlaces web para alimentar el contexto y conocimiento base del agente. El agente usará esta información para responder preguntas específicas.
+                      </div>
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {/* Carga de Archivos */}
+                        <div className="border border-dashed border-border rounded-lg p-6 flex flex-col items-center justify-center text-center bg-secondary/5 hover:bg-secondary/10 transition-colors relative">
+                          <FileText className="text-muted-foreground mb-2" size={24} />
+                          <h4 className="text-sm font-medium mb-1">Subir Archivo</h4>
+                          <p className="text-xs text-muted-foreground mb-4 max-w-[200px]">Soporta .pdf, .doc, .md, .csv, .xls</p>
+                          
+                          {isUploadingKnowledge ? (
+                            <div className="w-full max-w-[200px]">
+                              <div className="h-1.5 w-full bg-secondary rounded-full overflow-hidden">
+                                <div className="h-full bg-primary transition-all duration-300" style={{width: `${uploadProgress}%`}}></div>
+                              </div>
+                              <p className="text-xs text-muted-foreground mt-2">{Math.round(uploadProgress)}% subido</p>
+                            </div>
+                          ) : (
+                            <div className="relative">
+                              <input 
+                                type="file" 
+                                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" 
+                                accept=".pdf,.doc,.docx,.xls,.xlsx,.csv,.md,.txt"
+                                onChange={handleFileUpload}
+                              />
+                              <button type="button" className="px-4 py-2 bg-primary text-primary-foreground text-xs font-medium rounded-md pointer-events-none">
+                                Seleccionar archivo
+                              </button>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Carga de Links */}
+                        <div className="border border-border rounded-lg p-6 flex flex-col justify-center bg-secondary/5">
+                          <div className="flex items-center gap-2 mb-2">
+                            <span className="text-sm font-medium">Agregar Enlace Web</span>
+                          </div>
+                          <p className="text-xs text-muted-foreground mb-4">El agente raspará el contenido del enlace.</p>
+                          <div className="flex gap-2">
+                            <input 
+                              type="url" 
+                              placeholder="https://..." 
+                              value={newLinkUrl}
+                              onChange={e => setNewLinkUrl(e.target.value)}
+                              className="flex-1 bg-background border border-border rounded-md px-3 py-2 text-sm focus:outline-none focus:border-primary"
+                            />
+                            <button 
+                              type="button" 
+                              onClick={handleAddLink}
+                              className="px-3 py-2 bg-secondary hover:bg-secondary/80 text-foreground text-xs font-medium rounded-md transition-colors"
+                            >
+                              Agregar
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Lista de Conocimiento */}
+                      <div>
+                        <h4 className="text-sm font-medium mb-3 border-b border-border pb-2">Base de Conocimiento Actual</h4>
+                        <div className="space-y-2">
+                          {(!editingAgent.knowledgeBase || editingAgent.knowledgeBase.length === 0) ? (
+                            <div className="text-center py-6 text-xs text-muted-foreground italic border border-dashed border-border rounded-lg">
+                              No hay documentos ni enlaces agregados aún.
+                            </div>
+                          ) : (
+                            editingAgent.knowledgeBase.map((item: any, idx: number) => (
+                              <div key={idx} className="flex items-center justify-between p-3 bg-secondary/20 border border-border rounded-md">
+                                <div className="flex items-center gap-3 overflow-hidden">
+                                  {item.type === 'file' ? <FileText size={16} className="text-blue-500 shrink-0" /> : <div className="shrink-0 w-4 h-4 rounded-full border border-current flex items-center justify-center text-[8px] font-bold">URL</div>}
+                                  <a href={item.url} target="_blank" rel="noreferrer" className="text-sm truncate hover:underline" title={item.name}>{item.name}</a>
+                                </div>
+                                <button 
+                                  type="button" 
+                                  onClick={() => handleRemoveKnowledge(idx, item)}
+                                  className="p-1.5 text-muted-foreground hover:text-red-500 hover:bg-red-500/10 rounded transition-colors shrink-0"
+                                  title="Eliminar"
+                                >
+                                  <X size={14} />
+                                </button>
+                              </div>
+                            ))
+                          )}
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
               )}
@@ -785,7 +903,62 @@ const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
                 <div className="h-full overflow-y-auto p-6 pb-24">
                   <div className="bg-card border border-border rounded-xl p-6 shadow-sm max-w-4xl mx-auto">
                     <h3 className="text-lg font-semibold border-b border-border pb-3 mb-5">Canales de Comunicación</h3>
-                    /* NOT FOUND */
+                    <div className="space-y-4">
+                      <p className="text-sm text-muted-foreground mb-4">Vincular agente con canales de mensajería externos.</p>
+                      
+                      <div className="border border-border rounded-lg overflow-hidden">
+                        <div className="p-4 bg-secondary/10 flex items-center justify-between border-b border-border">
+                          <div className="flex items-center gap-3">
+                            <MessageSquare className="text-emerald-500" size={20} />
+                            <div>
+                              <div className="font-medium text-sm">WhatsApp (Baileys)</div>
+                              <div className="text-xs text-muted-foreground">Conexión vía Pairing Code de OpenClaw</div>
+                            </div>
+                          </div>
+                          <label className="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" className="sr-only peer" checked={editingAgent.whatsappEnabled || false} onChange={e => setEditingAgent({...editingAgent, whatsappEnabled: e.target.checked})} />
+                            <div className="w-11 h-6 bg-secondary rounded-full peer peer-checked:after:translate-x-full peer-checked:bg-emerald-500 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all"></div>
+                          </label>
+                        </div>
+
+                        {editingAgent.whatsappEnabled && (
+                          <div className="p-4 space-y-4">
+                            <div>
+                              <label className="text-xs font-medium">Número de WhatsApp (Incluir código de país, sin +)</label>
+                              <div className="flex gap-2 mt-1">
+                                <input type="text" value={editingAgent.whatsappNumber || ""} onChange={e => setEditingAgent({...editingAgent, whatsappNumber: e.target.value})} placeholder="18291234567" className="flex-1 bg-background border border-border rounded-md px-3 py-2 text-sm font-mono" />
+                                <button type="button" onClick={() => setPairingCode("W7X9-B2M4")} className="px-4 py-2 bg-emerald-500 text-white text-xs font-bold rounded-md hover:bg-emerald-600 transition-colors">
+                                  Generar Pairing Code
+                                </button>
+                              </div>
+                            </div>
+                            
+                            {pairingCode && (
+                              <div className="p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-md text-center">
+                                <p className="text-xs text-emerald-600 dark:text-emerald-400 mb-2 font-medium">Ingresa este código en tu WhatsApp vinculado:</p>
+                                <div className="text-3xl font-black font-mono tracking-[0.2em] text-emerald-500">{pairingCode}</div>
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="border border-border rounded-lg overflow-hidden">
+                        <div className="p-4 bg-secondary/10 flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <MessageSquare className="text-blue-500" size={20} />
+                            <div>
+                              <div className="font-medium text-sm">Telegram Bot</div>
+                              <div className="text-xs text-muted-foreground">Conexión vía Bot Token</div>
+                            </div>
+                          </div>
+                          <label className="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" className="sr-only peer" checked={editingAgent.telegramEnabled || false} onChange={e => setEditingAgent({...editingAgent, telegramEnabled: e.target.checked})} />
+                            <div className="w-11 h-6 bg-secondary rounded-full peer peer-checked:after:translate-x-full peer-checked:bg-blue-500 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all"></div>
+                          </label>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
               )}
@@ -794,13 +967,56 @@ const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
                 <div className="h-full overflow-y-auto p-6 pb-24">
                   <div className="bg-card border border-border rounded-xl p-6 shadow-sm max-w-4xl mx-auto">
                     <h3 className="text-lg font-semibold border-b border-border pb-3 mb-5">Integraciones y Plugins</h3>
-                    /* NOT FOUND */
+                    <div className="space-y-4">
+                      <p className="text-sm text-muted-foreground mb-4">Habilita herramientas externas (Plugins) para que el agente ejecute acciones.</p>
+                      
+                      <div className="grid grid-cols-1 gap-3">
+                        <div className={`p-4 border rounded-lg flex items-center justify-between cursor-pointer transition-colors ${editingAgent.tools?.includes('google') ? 'border-blue-500/50 bg-blue-500/5' : 'border-border hover:bg-secondary/20'}`} onClick={() => handleToolToggle('google')}>
+                          <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 rounded-md bg-white p-1 flex items-center justify-center"><img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg" alt="Google" className="w-full h-full" /></div>
+                            <div>
+                              <div className="font-medium text-sm">Ecosistema Google</div>
+                              <div className="text-xs text-muted-foreground">Calendar, Drive y Docs</div>
+                            </div>
+                          </div>
+                          <div className={`w-5 h-5 rounded-full border flex items-center justify-center ${editingAgent.tools?.includes('google') ? 'bg-blue-500 border-blue-500 text-white' : 'border-muted-foreground'}`}>
+                            {editingAgent.tools?.includes('google') && <span className="text-[10px]">✓</span>}
+                          </div>
+                        </div>
+
+                        <div className={`p-4 border rounded-lg flex items-center justify-between cursor-pointer transition-colors ${editingAgent.tools?.includes('wordpress') ? 'border-blue-400/50 bg-blue-400/5' : 'border-border hover:bg-secondary/20'}`} onClick={() => handleToolToggle('wordpress')}>
+                          <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 rounded-md bg-[#21759b] flex items-center justify-center text-white font-bold text-lg">W</div>
+                            <div>
+                              <div className="font-medium text-sm">WordPress</div>
+                              <div className="text-xs text-muted-foreground">Gestión de posts, páginas y usuarios</div>
+                            </div>
+                          </div>
+                          <div className={`w-5 h-5 rounded-full border flex items-center justify-center ${editingAgent.tools?.includes('wordpress') ? 'bg-[#21759b] border-[#21759b] text-white' : 'border-muted-foreground'}`}>
+                            {editingAgent.tools?.includes('wordpress') && <span className="text-[10px]">✓</span>}
+                          </div>
+                        </div>
+
+                        <div className={`p-4 border rounded-lg flex items-center justify-between cursor-pointer transition-colors ${editingAgent.tools?.includes('woocommerce') ? 'border-purple-600/50 bg-purple-600/5' : 'border-border hover:bg-secondary/20'}`} onClick={() => handleToolToggle('woocommerce')}>
+                          <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 rounded-md bg-[#96588a] flex items-center justify-center text-white font-bold text-lg">Woo</div>
+                            <div>
+                              <div className="font-medium text-sm">WooCommerce</div>
+                              <div className="text-xs text-muted-foreground">Gestión de inventario, pedidos y cupones</div>
+                            </div>
+                          </div>
+                          <div className={`w-5 h-5 rounded-full border flex items-center justify-center ${editingAgent.tools?.includes('woocommerce') ? 'bg-[#96588a] border-[#96588a] text-white' : 'border-muted-foreground'}`}>
+                            {editingAgent.tools?.includes('woocommerce') && <span className="text-[10px]">✓</span>}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
               )}
 
               {/* Floating Save Button if changes are made */}
-              {editingAgent && JSON.stringify(editingAgent) !== JSON.stringify(selectedAgent) && (
+              {editingAgent && hasChanges && (
                 <div className="absolute bottom-6 right-6 z-10 animate-in slide-in-from-bottom-4">
                   <div className="bg-card border border-primary/20 shadow-xl rounded-full px-6 py-3 flex items-center gap-4">
                     <span className="text-sm font-medium text-muted-foreground">Tienes cambios sin guardar</span>
