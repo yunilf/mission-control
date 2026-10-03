@@ -986,7 +986,20 @@ const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
                     <div className="bg-card border border-border rounded-lg p-6">
                       <h3 className="text-lg font-semibold border-b border-border pb-3 mb-5 flex items-center justify-between">
                         Identidad y Personalidad
-                        <span className="text-xs font-normal text-muted-foreground">IDENTITY.md</span>
+                        <div className="flex items-center gap-3">
+                          <button 
+                            type="button"
+                            onClick={() => {
+                              const path = `\\\\wsl.localhost\\Ubuntu\\home\\yunil\\agencia-bots\\.agents\\${editingAgent?.id}\\IDENTITY.md`;
+                              navigator.clipboard.writeText(path);
+                              alert("Ruta copiada al portapapeles:\n" + path);
+                            }}
+                            className="text-xs bg-secondary/50 hover:bg-secondary text-foreground px-3 py-1 rounded-md border border-border transition-colors"
+                          >
+                            📍 Ubicación
+                          </button>
+                          <span className="text-xs font-normal text-muted-foreground">IDENTITY.md</span>
+                        </div>
                       </h3>
                       <div className="space-y-6">
                       <div className="bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20 p-3 rounded-md text-xs mb-4">
@@ -1090,7 +1103,20 @@ const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
                   <div className="bg-card border border-border rounded-lg p-6 ">
                     <h3 className="text-lg font-semibold border-b border-border pb-3 mb-5 flex items-center justify-between">
                       Directivas (Tareas y Reglas)
-                      <span className="text-xs font-normal text-muted-foreground">SOUL.md</span>
+                      <div className="flex items-center gap-3">
+                        <button 
+                          type="button"
+                          onClick={() => {
+                            const path = `\\\\wsl.localhost\\Ubuntu\\home\\yunil\\agencia-bots\\.agents\\${editingAgent?.id}\\SOUL.md`;
+                            navigator.clipboard.writeText(path);
+                            alert("Ruta copiada al portapapeles:\n" + path);
+                          }}
+                          className="text-xs bg-secondary/50 hover:bg-secondary text-foreground px-3 py-1 rounded-md border border-border transition-colors"
+                        >
+                          📍 Ubicación
+                        </button>
+                        <span className="text-xs font-normal text-muted-foreground">SOUL.md</span>
+                      </div>
                     </h3>
                     <div className="space-y-6">
                       <div className="bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20 p-3 rounded-md text-xs mb-4">
