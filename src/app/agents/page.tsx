@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { collection, onSnapshot, doc, updateDoc, setDoc } from "firebase/firestore";
+import { collection, onSnapshot, doc, updateDoc, setDoc, getDoc } from "firebase/firestore";
 import { db, storage } from "@/lib/firebase";
 import { ref, uploadBytesResumable, getDownloadURL, deleteObject } from "firebase/storage";
 import { Bot, Activity, Terminal, Cpu, MemoryStick, Play, Square, Settings2, ShieldCheck, Clock, Plus, Power, Sparkles, X, User, FileText, Blocks, MessageSquare, Trash, Upload, Copy, Loader2, Smartphone, Check } from "lucide-react";
@@ -79,7 +79,7 @@ export default function AgentsFleetPage() {
 
   
   useEffect(() => {
-    getDoc(doc(db, "settings", "global")).then(snap => {
+    getDoc(doc(db, "settings", "global")).then((snap: any) => {
       if (snap.exists()) setGlobalSettings(snap.data());
     });
     const unsubDuties = onSnapshot(doc(db, "settings", "duties"), (docSnap) => {
