@@ -6,6 +6,40 @@ import { db, storage } from "@/lib/firebase";
 import { ref, uploadBytesResumable, getDownloadURL, deleteObject } from "firebase/storage";
 import { Bot, Activity, Terminal, Cpu, MemoryStick, Play, Square, Settings2, ShieldCheck, Clock, Plus, Power, Sparkles, X, User, FileText, Blocks, MessageSquare, Trash } from "lucide-react";
 
+export const STRICT_RULES_OPTIONS = [
+  "Prohibido dar respuestas largas (Ser siempre breve y directo)",
+  "Nunca inventar información o precios si no se sabe la respuesta",
+  "Jamás usar sarcasmo, ironía o ser condescendiente",
+  "Prohibido tutear al usuario (Usar siempre 'Usted')",
+  "No usar emojis bajo ninguna circunstancia (Extrema formalidad)",
+  "Nunca prometer soluciones, tiempos o garantías no documentadas",
+  "Prohibido opinar sobre política, religión o controversias sociales",
+  "Jamás culpar al cliente o ponerse a la defensiva frente a reclamos",
+  "Prohibido usar lenguaje coloquial, modismos o jerga",
+  "Nunca emitir juicios de valor u opiniones personales",
+  "Prohibido solicitar información de pago directamente por chat",
+  "Nunca decir 'No sé' sin ofrecer una alternativa o escalar el problema"
+];
+
+export const generateIdentity = (data: any) => {
+    let md = `# IDENTIDAD DEL AGENTE\n\n`;
+    if (data.role) md += `## 1. ROL Y PROPÓSITO\n${data.role}\n\n`;
+    if (data.tone) md += `## 2. TONO DE VOZ Y ESTILO\n${data.tone}\n\n`;
+    if (data.audience) md += `## 3. PERFIL DE LA AUDIENCIA\nTe diriges a: ${data.audience}\n\n`;
+    if (data.greeting) md += `## 4. EJEMPLO DE SALUDO\n> "${data.greeting}"\n\n`;
+    
+    let rulesText = "";
+    if (data.ruleChecklist && data.ruleChecklist.length > 0) {
+        rulesText += data.ruleChecklist.map((r: string) => "- " + r).join("\n") + "\n";
+    }
+    if (data.rules) {
+        rulesText += data.rules;
+    }
+    if (rulesText) md += `## 5. RESTRICCIONES DE PERSONALIDAD\n${rulesText}\n`;
+    
+    return md;
+  };
+
 export default function AgentsFleetPage() {
   const [agents, setAgents] = useState<any[]>([]);
   const [clients, setClients] = useState<any[]>([]);
@@ -196,20 +230,7 @@ export default function AgentsFleetPage() {
   const ROLE_OPTIONS = ["Asistente de Ventas", "Soporte Técnico", "Recepcionista", "Asesor Financiero"];
   const TONE_OPTIONS = ["Profesional y formal", "Amigable y cercano", "Entusiasta y persuasivo", "Directo y conciso"];
   const AUDIENCE_OPTIONS = ["Público General", "Jóvenes y Adolescentes", "Profesionales / B2B", "Personas Mayores"];
-  const STRICT_RULES_OPTIONS = [
-  "Prohibido dar respuestas largas (Ser siempre breve y directo)",
-  "Nunca inventar información o precios si no se sabe la respuesta",
-  "Jamás usar sarcasmo, ironía o ser condescendiente",
-  "Prohibido tutear al usuario (Usar siempre 'Usted')",
-  "No usar emojis bajo ninguna circunstancia (Extrema formalidad)",
-  "Nunca prometer soluciones, tiempos o garantías no documentadas",
-  "Prohibido opinar sobre política, religión o controversias sociales",
-  "Jamás culpar al cliente o ponerse a la defensiva frente a reclamos",
-  "Prohibido usar lenguaje coloquial, modismos o jerga",
-  "Nunca emitir juicios de valor u opiniones personales",
-  "Prohibido solicitar información de pago directamente por chat",
-  "Nunca decir 'No sé' sin ofrecer una alternativa o escalar el problema"
-];
+  
 
 const GREETING_OPTIONS = ["¡Hola! ¿En qué te puedo ayudar hoy?", "Bienvenido, soy tu asistente virtual.", "¡Qué tal! Cuéntame qué necesitas."];
 
@@ -339,24 +360,7 @@ const GREETING_OPTIONS = ["¡Hola! ¿En qué te puedo ayudar hoy?", "Bienvenido,
     );
   };
 
-  const generateIdentity = (data: any) => {
-    let md = `# IDENTIDAD DEL AGENTE\n\n`;
-    if (data.role) md += `## 1. ROL Y PROPÓSITO\n${data.role}\n\n`;
-    if (data.tone) md += `## 2. TONO DE VOZ Y ESTILO\n${data.tone}\n\n`;
-    if (data.audience) md += `## 3. PERFIL DE LA AUDIENCIA\nTe diriges a: ${data.audience}\n\n`;
-    if (data.greeting) md += `## 4. EJEMPLO DE SALUDO\n> "${data.greeting}"\n\n`;
-    
-    let rulesText = "";
-    if (data.ruleChecklist && data.ruleChecklist.length > 0) {
-        rulesText += data.ruleChecklist.map((r: string) => "- " + r).join("\n") + "\n";
-    }
-    if (data.rules) {
-        rulesText += data.rules;
-    }
-    if (rulesText) md += `## 5. RESTRICCIONES DE PERSONALIDAD\n${rulesText}\n`;
-    
-    return md;
-  };
+  
 
   const generateSoul = (data: any) => {
     let md = `# DIRECTIVAS CENTRALES (SOUL)\n\n`;

@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { collection, addDoc, onSnapshot } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { Bot, X } from "lucide-react";
+import { STRICT_RULES_OPTIONS, generateIdentity } from '@/app/agents/page';
 
 export default function AgentModals() {
   const [showAddModal, setShowAddModal] = useState(false);
@@ -47,8 +48,10 @@ export default function AgentModals() {
         tokens: "0",
         uptime: "0h",
         createdAt: new Date().toISOString(),
-        identity: "",
-        identityData: {},
+        identity: generateIdentity({ ruleChecklist: STRICT_RULES_OPTIONS }),
+        identityData: {
+          ruleChecklist: STRICT_RULES_OPTIONS
+        },
         soul: "",
         soulData: {},
         knowledgeBase: []
