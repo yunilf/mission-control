@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Save, Key, Shield, Settings2, Palette, Loader2, Bot, Check, Square, Lock } from "lucide-react";
+import { Save, Key, Shield, Settings2, Palette, Loader2, Bot, Check, Square, Lock, Plus, Trash } from "lucide-react";
 import { db } from "@/lib/firebase";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 
@@ -34,6 +34,7 @@ export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState("general");
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [newCustomRule, setNewCustomRule] = useState("");
   
   const [settings, setSettings] = useState({
     agencyName: "yunAi.agent",
@@ -42,6 +43,7 @@ export default function SettingsPage() {
     openaiApiKey: "",
     anthropicApiKey: "",
     globalSecurityChecklist: OPTIONAL_PERSONALITY_RULES,
+    customOptionalRules: [] as string[],
     globalBehaviorRules: "",
   });
 
@@ -55,7 +57,8 @@ export default function SettingsPage() {
           setSettings({ 
             ...settings, 
             ...data,
-            globalSecurityChecklist: data.globalSecurityChecklist !== undefined ? data.globalSecurityChecklist : OPTIONAL_PERSONALITY_RULES
+            globalSecurityChecklist: data.globalSecurityChecklist !== undefined ? data.globalSecurityChecklist : OPTIONAL_PERSONALITY_RULES,
+            customOptionalRules: data.customOptionalRules || []
           });
         }
       } catch (error) {
@@ -78,6 +81,15 @@ export default function SettingsPage() {
     } finally {
       setIsSaving(false);
     }
+  };
+
+  
+  const removeCustomRule = (rule: string) => {
+    setSettings({
+      ...settings,
+      customOptionalRules: settings.customOptionalRules.filter((r: string) => r !== rule),
+      globalSecurityChecklist: settings.globalSecurityChecklist.filter(r => r !== rule)
+    });
   };
 
   const toggleRule = (rule: string) => {
